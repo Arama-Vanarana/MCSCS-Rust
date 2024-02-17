@@ -1,2 +1,2 @@
-pub mod aria2_controller;
-pub mod fastmirror;
+pub mod controllers; 
+pub mod pages; 

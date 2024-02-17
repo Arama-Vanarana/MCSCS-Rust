@@ -1,11 +1,18 @@
-mod library;
-use library::aria2_controller::download;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    match download("https://dldir1.qq.com/qqfile/qq/PCQQ9.7.17/QQ9.7.17.29225.exe").await {
-        Ok(path) => println!("{:?}", path),
-        Err(e) => println!("{:?}", e),
+pub(crate) mod library;
+fn main() {
+    if !library::pages::init::main().is_ok() {
+        return;
     }
-    Ok(())
+    let start_time = std::time::Instant::now();
+
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&library::controllers::java::detect_java()).unwrap()
+    );
+
+    let elapsed_time = start_time.elapsed();
+    let elapsed_ms = elapsed_time.as_millis();
+    let elapsed_secs = elapsed_time.as_secs();
+
+    println!("运行时间: {}毫秒 {}秒", elapsed_ms, elapsed_secs);
 }
