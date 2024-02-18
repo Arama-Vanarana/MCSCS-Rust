@@ -1,18 +1,20 @@
 pub(crate) mod library;
+
+// #[tokio::main]
+// async
 fn main() {
-    if !library::pages::init::main().is_ok() {
-        return;
-    }
+    // if !library::pages::init::main().await.is_ok() {
+    //     return;
+    // }
     let start_time = std::time::Instant::now();
 
-    println!(
-        "{}",
-        serde_json::to_string_pretty(&library::controllers::java::detect_java()).unwrap()
-    );
+    let java = library::controllers::java::detect_java();
+    println!("{}", serde_json::to_string_pretty(&java).unwrap());
 
     let elapsed_time = start_time.elapsed();
-    let elapsed_ms = elapsed_time.as_millis();
-    let elapsed_secs = elapsed_time.as_secs();
-
-    println!("运行时间: {}毫秒 {}秒", elapsed_ms, elapsed_secs);
+    println!(
+        "运行时间: {}毫秒 {}秒",
+        elapsed_time.as_millis(),
+        elapsed_time.as_secs()
+    );
 }

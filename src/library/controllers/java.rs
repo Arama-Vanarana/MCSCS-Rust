@@ -1,11 +1,10 @@
 use rayon::prelude::*;
 use serde_json::{json, Value};
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 fn is_junction(path: &Path) -> bool {
-    if let Ok(metadata) = fs::symlink_metadata(path) {
+    if let Ok(metadata) = std::fs::symlink_metadata(path) {
         metadata.file_type().is_symlink()
     } else {
         false
@@ -13,7 +12,7 @@ fn is_junction(path: &Path) -> bool {
 }
 
 fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
-    if let Ok(entries) = fs::read_dir(path) {
+    if let Ok(entries) = std::fs::read_dir(path) {
         entries
             .filter_map(|entry| entry.ok())
             .par_bridge()

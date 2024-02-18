@@ -1,20 +1,27 @@
 use serde_json::{json, Value};
 
-async fn call_aria2_rpc(method: &str, params: Value, id: &str) -> Result<Value, reqwest::Error> {
+pub async fn call_aria2_rpc(
+    method: &str,
+    params: Value,
+    id: &str,
+) -> Result<Value, reqwest::Error> {
     // 合并参数
-    let mut merged_params = json!(["token:MCSCS"]).as_array().unwrap_or(&vec![]).clone();
-    merged_params.extend(params.as_array().unwrap_or(&vec![]).iter().cloned());
+    let params = json!(json!(["token:MCSCS"])
+        .as_array()
+        .unwrap_or(&vec![])
+        .clone()
+        .extend(params.as_array().unwrap_or(&vec![]).iter().cloned()));
 
-    let client = reqwest::Client::new();
     // 发送请求
-    match client
+    match reqwest::Client::new()
         .post("http://localhost:6800/jsonrpc") // Change URL accordingly
         .json(&json!({
             "jsonrpc": "2.0",
             "method": method,
             "id": id,
-            "params": serde_json::to_value(merged_params.clone()).unwrap(),
+            "params": params,
         }))
+        .timeout(std::time::Duration::from_secs(1))
         .send()
         .await
     {
@@ -25,7 +32,9 @@ async fn call_aria2_rpc(method: &str, params: Value, id: &str) -> Result<Value, 
             Ok(result_value)
         }
         Err(e) => {
+            // if !e.is_timeout() {
             println!("{}", e);
+            // }
             Err(e)
         }
     }
@@ -130,6 +139,6 @@ pub async fn download(url: &str) -> Result<String, Box<dyn std::error::Error>> {
         if download_status == "paused" {
             call_aria2_rpc("aria2.unpause", json!([gid]), "unpause").await?;
         }
-        std::thread::sleep(std::time::Duration::from_millis(300));
+        std::thread::sleep(std::time::Duration::from_millis(250));
     }
 }
