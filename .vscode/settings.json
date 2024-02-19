@@ -1,7 +1,6 @@
 {
-    // [[rust-analyzer]]
-    "rust-analyzer.linkedProjects": [
-        ".\\Cargo.toml",
-    ],
-    "rust-analyzer.showUnlinkedFileNotification": false,
+    "files.exclude": {
+        "target": true, // Rust 构建文件夹
+        "Cargo.lock": true, // Rust 依赖文件
+    }
 }

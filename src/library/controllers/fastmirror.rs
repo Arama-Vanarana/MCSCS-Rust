@@ -50,12 +50,8 @@ pub async fn get_fastmirror_builds_value(
     Ok(json!(name_map))
 }
 
-pub async fn download_fastmirror_core(
-    core: &str,
-    mc_version: &str,
-    build_version: &str,
-) -> Result<String, reqwest::Error> {
-    Ok(crate::library::controllers::aria2::download(
+pub async fn download_fastmirror_core(core: &str, mc_version: &str, build_version: &str) -> String {
+    return crate::library::controllers::aria2::download(
         format!(
             "https://download.fastmirror.net/download/{}/{}/{}",
             core, mc_version, build_version
@@ -63,5 +59,5 @@ pub async fn download_fastmirror_core(
         .as_str(),
     )
     .await
-    .expect("下载失败"))
+    .expect("下载失败");
 }

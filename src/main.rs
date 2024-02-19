@@ -1,15 +1,16 @@
-pub(crate) mod library;
+mod library;
 
-// #[tokio::main]
-// async
-fn main() {
-    // if !library::pages::init::main().await.is_ok() {
-    //     return;
-    // }
+#[tokio::main]
+async fn main() {
+    if !library::pages::init::main().await.is_ok() {
+        return;
+    }
     let start_time = std::time::Instant::now();
-
-    let java = library::controllers::java::detect_java();
-    println!("{}", serde_json::to_string_pretty(&java).unwrap());
+    library::controllers::java::save_java_lists(library::controllers::java::detect_java());
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&library::controllers::java::load_java_lists()).unwrap()
+    );
 
     let elapsed_time = start_time.elapsed();
     println!(

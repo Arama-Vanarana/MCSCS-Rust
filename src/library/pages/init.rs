@@ -1,20 +1,19 @@
 use serde_json::json;
 
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    match crate::library::controllers::aria2::call_aria2_rpc(
-        "aria2.getVersion",
-        json!([]),
-        "test_aria2",
-    )
-    .await
+    let current_dir = std::env::current_dir().unwrap();
+    match crate::library::controllers::aria2::call_aria2_rpc("aria2.getVersion", json!([]), "check")
+        .await
     {
         Ok(version) => {
-            println!("Aria2已启动: {}", version["version"].as_str().unwrap_or("unknown"));
-            Ok(())
+            println!(
+                "Aria2已启动: {}",
+                version["version"].as_str().unwrap_or("unknown")
+            );
         }
         Err(e) => {
             if e.is_timeout() {
-                let aria2_current_dir = std::env::current_dir().unwrap().join("aria2");
+                let aria2_current_dir = current_dir.join("aria2");
                 std::fs::create_dir_all(aria2_current_dir.join("logs"))
                     .expect("创建logs文件夹失败");
                 std::fs::create_dir_all(aria2_current_dir.join("downloads"))
@@ -44,11 +43,28 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         ),
                     ])
                     .spawn()
-                    .expect("启动Aria2c失败!");
+                    .expect("Aria2c启动失败!");
                 println!("Aria2c启动成功!");
-                return Ok(());
+            } else {
+                return Err(e.into());
             }
-            Err(e.into())
         }
     }
+    let servers_current_dir = current_dir.join("servers");
+    std::fs::create_dir_all(&servers_current_dir).expect("创建servers文件夹失败");
+    match std::fs::metadata(servers_current_dir.join("java.json")) {
+        Ok(_) => {}
+        Err(_) => crate::library::controllers::java::save_java_lists(
+            crate::library::controllers::java::detect_java(),
+        ),
+    }
+    match std::fs::metadata(servers_current_dir.join("config.json")) {
+        Ok(_) => {}
+        Err(_) => {
+            let file = std::fs::File::create(servers_current_dir.join("config.json"))
+                .expect("创建config.json错误");
+            serde_json::to_writer_pretty(file, &json!({"data": {}})).expect("config.json错误");
+        }
+    }
+    Ok(())
 }

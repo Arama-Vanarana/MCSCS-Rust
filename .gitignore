@@ -416,3 +416,6 @@ FodyWeavers.xsd
 # 测试aria2的rpc服务器, 发布时会添加
 aria2/*
 !aria2/aria2.conf
+
+# 服务器
+servers/

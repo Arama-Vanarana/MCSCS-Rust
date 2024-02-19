@@ -6,11 +6,11 @@ pub async fn call_aria2_rpc(
     id: &str,
 ) -> Result<Value, reqwest::Error> {
     // 合并参数
-    let params = json!(json!(["token:MCSCS"])
-        .as_array()
-        .unwrap_or(&vec![])
-        .clone()
-        .extend(params.as_array().unwrap_or(&vec![]).iter().cloned()));
+    let merged_params = {
+        let mut merged_params = json!(["token:MCSCS"]).as_array().unwrap_or(&vec![]).clone();
+        merged_params.extend(params.as_array().unwrap_or(&vec![]).iter().cloned());
+        json!(merged_params)
+    };
 
     // 发送请求
     match reqwest::Client::new()
@@ -19,7 +19,7 @@ pub async fn call_aria2_rpc(
             "jsonrpc": "2.0",
             "method": method,
             "id": id,
-            "params": params,
+            "params": merged_params,
         }))
         .timeout(std::time::Duration::from_secs(1))
         .send()
@@ -32,9 +32,9 @@ pub async fn call_aria2_rpc(
             Ok(result_value)
         }
         Err(e) => {
-            // if !e.is_timeout() {
-            println!("{}", e);
-            // }
+            if !e.is_timeout() {
+                println!("{}", e);
+            }
             Err(e)
         }
     }
@@ -55,8 +55,8 @@ fn format_size(size: u64) -> String {
 // 定义一个函数来下载文件并显示进度条
 pub async fn download(url: &str) -> Result<String, Box<dyn std::error::Error>> {
     // 调用 aria2.addUri 来添加下载任务，并获取 GIDlet mut started = false;
-    let value = call_aria2_rpc("aria2.addUri", json!([[url]]), "add").await?;
-    let gid = value.as_str().unwrap();
+    let gid_json = call_aria2_rpc("aria2.addUri", json!([[url]]), "add").await?;
+    let gid = gid_json.as_str().unwrap();
     // 创建一个进度条
     let pb = indicatif::ProgressBar::new(0);
     // 设置进度条的样式
