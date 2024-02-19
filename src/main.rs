@@ -6,11 +6,7 @@ async fn main() {
         return;
     }
     let start_time = std::time::Instant::now();
-    library::controllers::java::save_java_lists(library::controllers::java::detect_java());
-    println!(
-        "{}",
-        serde_json::to_string_pretty(&library::controllers::java::load_java_lists()).unwrap()
-    );
+
 
     let elapsed_time = start_time.elapsed();
     println!(
