@@ -1,3 +1,4 @@
+use log::debug;
 use rayon::prelude::*;
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
@@ -82,14 +83,16 @@ pub fn detect_java() -> Value {
         search_file(&root_path, &java_paths);
     });
     let java = json!(*java_paths.lock().unwrap());
+    debug!("寻找到的Java环境: {}", java);
     java
 }
 
 pub fn save_java_lists(java: Value) {
     let current_dir = std::env::current_dir().unwrap().join("servers");
     let file =
-        std::fs::File::create(current_dir.clone().join("java.json")).expect("创建java.json错误");
-    serde_json::to_writer_pretty(file, &json!({"data": java})).expect("写入java.json错误");
+        std::fs::File::create(current_dir.clone().join("java.json")).expect("创建servers/java.json错误");
+    debug!("已保存到servers/java.json: {}", java);
+    serde_json::to_writer_pretty(file, &json!({"data": java})).expect("写入servers/java.json错误");
 }
 
 pub fn load_java_lists() -> Value {
@@ -105,9 +108,10 @@ pub fn load_java_lists() -> Value {
     // 读取文件内容到字符串中
     let mut json_data = String::new();
     file.read_to_string(&mut json_data)
-        .expect("读取java.json失败");
+        .expect("读取servers/java.json失败");
 
     // 将 JSON 字符串反序列化为 MyData 结构体实例
-    let data: serde_json::Value = serde_json::from_str(&json_data).expect("无法解析JSON");
-    data["data"].clone()
+    let java: serde_json::Value = serde_json::from_str(&json_data).expect("无法解析JSON");
+    debug!("从servers/java.json加载到的Java环境: {}", java);
+    java["data"].clone()
 }

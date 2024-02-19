@@ -1,13 +1,13 @@
 use serde_json::{json, Value};
 
-async fn get_api_value(url: &str) -> Result<Value, reqwest::Error> {
-    let response = reqwest::get(url).await?;
-    let json = response.json::<Value>().await?;
-    Ok(json)
+async fn get_api_value(url: &str) -> Value {
+    let response = reqwest::get(url).await.expect("FastMirror请求失败");
+    let json = response.json::<Value>().await.expect("无法解析JSON");
+    json
 }
 
-pub async fn get_fastmirror_value() -> Result<Value, Box<dyn std::error::Error>> {
-    let data = get_api_value("https://download.fastmirror.net/api/v3").await?;
+pub async fn get_fastmirror_value() -> Value {
+    let data = get_api_value("https://download.fastmirror.net/api/v3").await;
     let mut name_map = serde_json::Map::new();
 
     if let Some(builds) = data["data"].as_array() {
@@ -19,13 +19,10 @@ pub async fn get_fastmirror_value() -> Result<Value, Box<dyn std::error::Error>>
             }
         }
     }
-    Ok(json!(name_map))
+    json!(name_map)
 }
 
-pub async fn get_fastmirror_builds_value(
-    core: &str,
-    version: &str,
-) -> Result<Value, Box<dyn std::error::Error>> {
+pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
     let data = get_api_value(
         format!(
             "https://download.fastmirror.net/api/v3/{}/{}?offset=0&limit=25",
@@ -33,7 +30,7 @@ pub async fn get_fastmirror_builds_value(
         )
         .as_str(),
     )
-    .await?;
+    .await;
 
     let mut name_map = serde_json::Map::new();
 
@@ -47,7 +44,7 @@ pub async fn get_fastmirror_builds_value(
         }
     }
 
-    Ok(json!(name_map))
+    json!(name_map)
 }
 
 pub async fn download_fastmirror_core(core: &str, mc_version: &str, build_version: &str) -> String {

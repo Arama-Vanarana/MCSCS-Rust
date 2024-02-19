@@ -11,8 +11,11 @@ description = "MCSCS powered by Rust"
 [dependencies]
 chrono = "0.4"
 indicatif = "0.17"
+log = "0.4"
+log4rs = "1.3"
 rayon = "1.8"
 regex = "1.10"
 reqwest = { version = "0.11", features = ["json"] }
 serde_json = "1"
 tokio = { version = "1.36", features = ["full"] }
+# abcdefghijklmnopqrstuvwxyz

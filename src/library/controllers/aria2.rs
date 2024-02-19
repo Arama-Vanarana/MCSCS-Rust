@@ -1,3 +1,4 @@
+use log::{debug, error};
 use serde_json::{json, Value};
 
 pub async fn call_aria2_rpc(
@@ -29,11 +30,12 @@ pub async fn call_aria2_rpc(
             // 获取响应中的 "result" 字段
             let result = response.json::<Value>().await?;
             let result_value = result["result"].clone();
+            debug!("{}", result_value);
             Ok(result_value)
         }
         Err(e) => {
             if !e.is_timeout() {
-                println!("{}", e);
+                error!("{:?}", e);
             }
             Err(e)
         }

@@ -412,10 +412,12 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-###########################################
-# 测试aria2的rpc服务器, 发布时会添加
+# aria2c
 aria2/*
 !aria2/aria2.conf
 
 # 服务器
 servers/
+
+# 日志
+logs/
