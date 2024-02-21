@@ -412,12 +412,8 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-# aria2c
-aria2/*
-!aria2/aria2.conf
+# MCSCS
+MCSCS/*/*
 
-# 服务器
-servers/
-
-# 日志
-logs/
+# aria2c config
+!MCSCS/aria2c/aria2c.conf

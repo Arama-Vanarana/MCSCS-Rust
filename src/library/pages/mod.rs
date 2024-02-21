@@ -1,9 +1,13 @@
 pub mod init; // 初始化
 
-pub fn input() -> String { // rust版的cin(?)
+#[doc = "返回输入的内容"]
+pub fn input(desc: &str) -> String {
+    use std::io::Write; 
+    print!("{desc}: ");
+    std::io::stdout().flush().expect("无法刷新stdout");
     let mut input = String::new();
     std::io::stdin()
         .read_line(&mut input)
-        .expect("read_line error!");
+        .expect("读取 stdin 失败");
     input
 }

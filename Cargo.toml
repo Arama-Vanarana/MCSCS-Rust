@@ -11,6 +11,7 @@ description = "MCSCS powered by Rust"
 [dependencies]
 chrono = "0.4"
 indicatif = "0.17"
+lazy_static = "1.4"
 log = "0.4"
 log4rs = "1.3"
 rayon = "1.8"

@@ -6,6 +6,7 @@ async fn get_api_value(url: &str) -> Value {
     json
 }
 
+#[doc = "获取FastMirrorAPI的返回值"]
 pub async fn get_fastmirror_value() -> Value {
     let data = get_api_value("https://download.fastmirror.net/api/v3").await;
     let mut name_map = serde_json::Map::new();
@@ -22,13 +23,11 @@ pub async fn get_fastmirror_value() -> Value {
     json!(name_map)
 }
 
+#[doc = "获取FastMirrorAPI的build版本返回值"]
 pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
     let data = get_api_value(
-        format!(
-            "https://download.fastmirror.net/api/v3/{}/{}?offset=0&limit=25",
-            core, version
-        )
-        .as_str(),
+        format!("https://download.fastmirror.net/api/v3/{core}/{version}?offset=0&limit=25")
+            .as_str(),
     )
     .await;
 
@@ -47,14 +46,11 @@ pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
     json!(name_map)
 }
 
+#[doc = "下载FastMirrorAPI返回的服务器核心"]
 pub async fn download_fastmirror_core(core: &str, mc_version: &str, build_version: &str) -> String {
-    return crate::library::controllers::aria2::download(
-        format!(
-            "https://download.fastmirror.net/download/{}/{}/{}",
-            core, mc_version, build_version
-        )
-        .as_str(),
-    )
+    return crate::library::controllers::aria2c::download(format!(
+        "https://download.fastmirror.net/download/{core}/{mc_version}/{build_version}"
+    ))
     .await
     .expect("下载失败");
 }
