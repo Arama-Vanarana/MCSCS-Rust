@@ -42,7 +42,7 @@ pub async fn call_aria2c_rpc(
         Err(e) => {
             if !e.is_timeout() {
                 error!("aria2c -> {e}");
-            } 
+            }
             Err(e)
         }
     }
@@ -76,7 +76,22 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
     // 循环更新进度条
     loop {
         // 调用 aria2.tellStatus 来获取下载状态
-        let status = call_aria2c_rpc("aria2.tellStatus", json!([gid]), "status").await?;
+        let status = call_aria2c_rpc(
+            "aria2.tellStatus",
+            json!([
+                gid,
+                [
+                    "completedLength",
+                    "totalLength",
+                    "downloadSpeed",
+                    "connections",
+                    "status",
+                    "files"
+                ]
+            ]),
+            "status",
+        )
+        .await?;
         // 获取已完成的大小，总大小，下载速度，剩余时间等信息
         let completed = status["completedLength"]
             .as_str()
@@ -103,7 +118,7 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
         // 计算剩余时间
         let mut eta = String::new();
         if speed != 0 {
-            let remaining_time_secs = (total - completed) / speed;
+            let remaining_time_secs = (total - completed).saturating_div(speed); // 使用 saturating_div 处理溢出
             if remaining_time_secs != 0 {
                 let remaining_hours = remaining_time_secs / 3600;
                 let remaining_minutes = (remaining_time_secs % 3600) / 60;
@@ -136,7 +151,10 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
         ));
         let download_status = status["status"].as_str().unwrap_or("error");
         if download_status == "complete" {
-            let file_path = status["files"][0]["path"].to_string();
+            let file_path = status["files"][0]["path"]
+                .as_str()
+                .unwrap()
+                .replace("/", "\\");
             pb.finish_with_message(format!("Download complete: {file_path}"));
             return Ok(file_path);
         }
