@@ -40,7 +40,9 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
                         let version = get_java_version(java_path);
                         if version != "unknown".to_string() {
                             let mut java_paths = java_paths.lock().unwrap();
-                            java_paths.push(json!({"version": version, "path": java_path}));
+                            java_paths.push(
+                                json!({"version": version, "path": java_path}),
+                            );
                         }
                     }
                 }
@@ -71,7 +73,9 @@ pub fn get_java_version(java_path: &str) -> String {
 pub fn detect_java() -> Value {
     let java_paths = Arc::new(Mutex::new(Vec::new()));
 
-    let drives: Vec<_> = (b'A'..=b'Z').map(|drive| format!("{}:\\", drive as char)).collect();
+    let drives: Vec<_> = (b'A'..=b'Z')
+        .map(|drive| format!("{}:\\", drive as char))
+        .collect();
 
     drives.into_par_iter().for_each(|drive| {
         let root_path = PathBuf::from(drive);
@@ -83,8 +87,7 @@ pub fn detect_java() -> Value {
     java
 }
 
-
-pub fn save_java_lists(java: Value) {
+pub fn save_java_lists(java: &Value) {
     let file = std::fs::File::create(
         std::env::current_dir()
             .unwrap()

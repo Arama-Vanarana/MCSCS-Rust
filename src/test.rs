@@ -14,11 +14,21 @@ async fn init() -> Result<(), Box<dyn std::error::Error>> {
                 *initialized = true;
                 Ok(())
             }
-            Err(err) => Err(err), // Forward the error if initialization fails
+            Err(err) => Err(err),
         }
     } else {
         Ok(())
     }
+}
+
+#[tokio::test]
+#[doc = "测试创建服务器页面"]
+async fn test_create_page() {
+    if let Err(err) = init().await {
+        eprintln!("初始化失败: {err}");
+        return;
+    }
+    library::pages::create::main().await;
 }
 
 #[tokio::test]
@@ -28,7 +38,10 @@ async fn test_input() {
         eprintln!("初始化失败: {err}");
         return;
     }
-    println!("你输入了: {}", library::pages::input("请输入任意内容"));
+    println!(
+        "你输入了: {}",
+        library::controllers::input("请输入任意内容")
+    );
 }
 
 #[tokio::test]

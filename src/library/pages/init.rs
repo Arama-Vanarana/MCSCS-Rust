@@ -3,6 +3,8 @@ use log4rs;
 use serde_json::json;
 use std::{fs, path::PathBuf};
 
+use crate::library::controllers::java::{detect_java, save_java_lists};
+
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let current_dir = std::env::current_dir().unwrap().join("MCSCS");
     let log_path = current_dir
@@ -93,8 +95,8 @@ fn init_servers(current_dir: &std::path::PathBuf) {
     std::fs::create_dir_all(&servers_current_dir).expect("创建MCSCS/servers文件夹失败");
     match std::fs::metadata(servers_current_dir.join("java.json")) {
         Ok(_) => info!("MCSCS/servers/java.json存在"),
-        Err(_) => crate::library::controllers::java::save_java_lists(
-            crate::library::controllers::java::detect_java(),
+        Err(_) => save_java_lists(
+            &detect_java(),
         ),
     }
     match std::fs::metadata(servers_current_dir.join("config.json")) {

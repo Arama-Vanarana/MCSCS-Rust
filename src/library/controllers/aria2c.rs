@@ -1,4 +1,4 @@
-use log::{error, trace, warn};
+use log::{error, trace};
 use serde_json::{json, Value};
 
 #[doc = r#"# 使用
@@ -27,7 +27,7 @@ pub async fn call_aria2c_rpc(
     trace!("aria2c <- {}", args);
     // 发送请求
     match reqwest::Client::new()
-        .post("http://localhost:6800/jsonrpc") // Change URL accordingly
+        .post("http://localhost:6800/jsonrpc")
         .json(&args)
         .timeout(std::time::Duration::from_secs(1))
         .send()
@@ -61,21 +61,17 @@ fn format_size(size: u64) -> String {
 
 #[doc = "使用Aria2c下载文件"]
 pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>> {
-    // 调用 aria2.addUri 来添加下载任务，并获取 GIDlet mut started = false;
+    // 调用 aria2.addUri 来添加下载任务，并获取 GID
     let gid_json = call_aria2c_rpc("aria2.addUri", json!([[url]]), "add").await?;
     let gid = gid_json.as_str().unwrap();
-    // 创建一个进度条
     let pb = indicatif::ProgressBar::new(0);
-    // 设置进度条的样式
     pb.set_style(
         indicatif::ProgressStyle::default_bar()
             .template("[{bar:50.green}] {msg}")
             .unwrap()
             .progress_chars("=> "),
     );
-    // 循环更新进度条
     loop {
-        // 调用 aria2.tellStatus 来获取下载状态
         let status = call_aria2c_rpc(
             "aria2.tellStatus",
             json!([
@@ -109,16 +105,13 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
             .parse::<u64>()
             .unwrap();
 
-        // 设置进度条的最大值
         pb.set_length(total);
 
-        // 设置进度条的当前值
         pb.set_position(completed);
-
-        // 计算剩余时间
+        
         let mut eta = String::new();
         if speed != 0 {
-            let remaining_time_secs = (total - completed).saturating_div(speed); // 使用 saturating_div 处理溢出
+            let remaining_time_secs = (total - completed) / speed;
             if remaining_time_secs != 0 {
                 let remaining_hours = remaining_time_secs / 3600;
                 let remaining_minutes = (remaining_time_secs % 3600) / 60;
@@ -136,7 +129,7 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
             }
         }
 
-        // 设置进度条的下载速度和剩余时间
+        
         pb.set_message(format!(
             "{}/s {}/{} CN:{} {}",
             format_size(speed),
