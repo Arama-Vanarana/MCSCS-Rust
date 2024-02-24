@@ -10,8 +10,8 @@ async fn get_api_value(url: &str) -> Value {
 #[doc = "获取FastMirrorAPI的返回值"]
 pub async fn get_fastmirror_value() -> Value {
     let data = get_api_value("https://download.fastmirror.net/api/v3").await;
+    
     let mut name_map = serde_json::Map::new();
-
     if let Some(builds) = data["data"].as_array() {
         for entry in builds {
             // 获取每个对象内的 "name" 字段值
@@ -33,7 +33,6 @@ pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
     .await;
 
     let mut name_map = serde_json::Map::new();
-
     if let Some(builds) = data["data"]["builds"].as_array() {
         for entry in builds {
             // 获取每个对象内的 "name" 字段值
@@ -43,7 +42,6 @@ pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
             }
         }
     }
-
     json!(name_map)
 }
 

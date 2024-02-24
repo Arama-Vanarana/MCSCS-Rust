@@ -128,7 +128,6 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
                 }
             }
         }
-
         
         pb.set_message(format!(
             "{}/s {}/{} CN:{} {}",

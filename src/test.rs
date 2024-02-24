@@ -22,6 +22,16 @@ async fn init() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[tokio::test]
+#[doc = "测试启动服务器页面"]
+async fn test_start_page() {
+    if let Err(err) = init().await {
+        eprintln!("初始化失败: {err}");
+        return;
+    }
+    library::pages::start::main();
+}
+
+#[tokio::test]
 #[doc = "测试创建服务器页面"]
 async fn test_create_page() {
     if let Err(err) = init().await {

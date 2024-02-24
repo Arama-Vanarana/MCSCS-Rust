@@ -1,9 +1,10 @@
 use log::debug;
 use rayon::prelude::*;
 use serde_json::{json, Value};
-use std::fs;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
+use std::{env, fs};
 
 fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
     if let Ok(entries) = fs::read_dir(path) {
@@ -40,9 +41,7 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
                         let version = get_java_version(java_path);
                         if version != "unknown".to_string() {
                             let mut java_paths = java_paths.lock().unwrap();
-                            java_paths.push(
-                                json!({"version": version, "path": java_path}),
-                            );
+                            java_paths.push(json!({"version": version, "path": java_path}));
                         }
                     }
                 }
@@ -88,8 +87,8 @@ pub fn detect_java() -> Value {
 }
 
 pub fn save_java_lists(java: &Value) {
-    let file = std::fs::File::create(
-        std::env::current_dir()
+    let file = fs::File::create(
+        env::current_dir()
             .unwrap()
             .join("MCSCS")
             .join("servers")
@@ -102,9 +101,8 @@ pub fn save_java_lists(java: &Value) {
 }
 
 pub fn load_java_lists() -> Value {
-    use std::io::Read;
-    let mut file = std::fs::File::open(
-        std::env::current_dir()
+    let mut file = fs::File::open(
+        env::current_dir()
             .unwrap()
             .join("MCSCS")
             .join("servers")
@@ -117,8 +115,7 @@ pub fn load_java_lists() -> Value {
     file.read_to_string(&mut json_data)
         .expect("读取MCSCS/servers/java.json失败");
 
-    // 将 JSON 字符串反序列化为 MyData 结构体实例
-    let java: serde_json::Value = serde_json::from_str(&json_data).expect("无法解析JSON");
+    let java = serde_json::from_str::<Value>(&json_data).expect("无法解析JSON");
     debug!("从MCSCS/servers/java.json加载到的Java环境: {java}");
     java["data"].clone()
 }

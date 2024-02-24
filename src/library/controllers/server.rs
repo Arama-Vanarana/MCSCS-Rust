@@ -1,10 +1,11 @@
+use std::{env, fs, io::Read};
+
 use log::debug;
 use serde_json::{json, Value};
 
 pub fn load_servers_lists() -> Value {
-    use std::io::Read;
-    let mut file = std::fs::File::open(
-        std::env::current_dir()
+    let mut file =fs::File::open(
+        env::current_dir()
             .unwrap()
             .join("MCSCS")
             .join("servers")
@@ -26,11 +27,11 @@ pub fn load_servers_lists() -> Value {
 #[doc = "如果config参数是None就会删除配置"]
 pub fn save_servers_lists(server: &str, config: Option<&Value>) {
     let mut data = load_servers_lists();
-    let current_dir = std::env::current_dir()
+    let current_dir = env::current_dir()
         .unwrap()
         .join("MCSCS")
         .join("servers");
-    let file = std::fs::File::create(current_dir.clone().join("config.json"))
+    let file = fs::File::create(current_dir.clone().join("config.json"))
         .expect("创建MCSCS/servers/config.json失败");
     match config {
         Some(c) => {

@@ -317,7 +317,7 @@ async fn build_version(core: &str, mc_version: &str) -> String {
         let mut index = 0;
         let mut builds = Vec::<&String>::new();
         if let Some(obj) = fastmirror.as_object() {
-            for (build, value) in obj {
+            for (build, value) in obj {              
                 println!("{index}: {build}(更新时间: {})", value["update_time"]);
                 builds.push(build);
                 index += 1;
