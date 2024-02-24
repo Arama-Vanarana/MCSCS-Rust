@@ -24,7 +24,7 @@ pub fn load_servers_lists() -> Value {
 }
 
 #[doc = "如果config参数是None就会删除配置"]
-pub fn save_servers_lists(server: &str, config: Option<Value>) {
+pub fn save_servers_lists(server: &str, config: Option<&Value>) {
     let mut data = load_servers_lists();
     let current_dir = std::env::current_dir()
         .unwrap()
@@ -35,7 +35,7 @@ pub fn save_servers_lists(server: &str, config: Option<Value>) {
     match config {
         Some(c) => {
             debug!("服务器配置更改: {} => {c}", data[server]);
-            data[server] = c;
+            data[server] = c.clone();
         }
         None => {
             match &mut data {

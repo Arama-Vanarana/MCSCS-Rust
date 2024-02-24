@@ -148,7 +148,7 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
                 .as_str()
                 .unwrap()
                 .replace("/", "\\");
-            pb.finish_with_message(format!("Download complete: {file_path}"));
+            pb.finish_with_message(format!("下载完成: {file_path}"));
             return Ok(file_path);
         }
         if download_status == "error" || download_status == "removed" {

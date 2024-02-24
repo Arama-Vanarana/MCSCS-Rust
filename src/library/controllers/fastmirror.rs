@@ -76,10 +76,12 @@ pub async fn download_fastmirror_core(
     ))
     .await
     .expect("下载失败");
-    let fastmirror =
-        &(crate::library::controllers::fastmirror::get_fastmirror_builds_value(core, mc_version)
-            .await)[build_version];
-    let fastmirror_sha1 = (&fastmirror)["sha1"].as_str().unwrap().to_owned();
+    let fastmirror_sha1 =
+        crate::library::controllers::fastmirror::get_fastmirror_builds_value(core, mc_version)
+            .await[build_version]["sha1"]
+            .as_str()
+            .unwrap()
+            .to_owned();
     let file_sha1 = get_file_sha1(&file_path);
     if file_sha1 != fastmirror_sha1 {
         error!("SHA1比对失败!FastMirror返回: {fastmirror_sha1}, 但此文件的SHA1为{file_sha1}");

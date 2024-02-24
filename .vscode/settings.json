@@ -1,6 +1,3 @@
 {
-    // "files.exclude": {
-    //     "target": true, // Rust 构建文件夹
-    //     "Cargo.lock": true, // Rust 依赖文件
-    // }
+    "files.eol": "\n",
 }

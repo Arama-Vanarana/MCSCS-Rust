@@ -38,9 +38,10 @@ async fn test_input() {
         eprintln!("初始化失败: {err}");
         return;
     }
+    print!("请输入任意内容: ");
     println!(
         "你输入了: {}",
-        library::controllers::input("请输入任意内容")
+        library::controllers::input()
     );
 }
 

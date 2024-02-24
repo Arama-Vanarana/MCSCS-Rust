@@ -4,9 +4,8 @@ pub mod java; // Java环境寻找
 pub mod server; // 获取/更改服务器配置
 
 #[doc = "返回输入的内容"]
-pub fn input(desc: &str) -> String {
+pub fn input() -> String {
     use std::io::Write; 
-    print!("{desc}: ");
     std::io::stdout().flush().expect("无法刷新stdout");
     let mut input = String::new();
     std::io::stdin()
