@@ -28,4 +28,4 @@ async fn main() {
 }
 
 #[cfg(test)]
-mod test;
+mod tests;

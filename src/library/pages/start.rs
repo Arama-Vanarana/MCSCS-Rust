@@ -1,5 +1,5 @@
 use crate::library::controllers::{input, server::load_servers_lists};
-use serde_json::json;
+
 use std::{env, os::windows::process::CommandExt, process::Command};
 
 pub fn main() {
@@ -7,7 +7,7 @@ pub fn main() {
     loop {
         let mut index = 0;
         let mut server_names = Vec::<&String>::new();
-        let server_configs_clone = server_configs.clone();
+        let server_configs_clone = server_configs.take();
         if let Some(server) = server_configs_clone.as_object() {
             for (server, _) in server {
                 println!("{index}: {server}");
@@ -39,13 +39,14 @@ pub fn main() {
                 process.arg("start"); // 启动新窗口
                 process.raw_arg(format!("\"{name}\"")); // 标题
                 process.arg(server["java"]["path"].take().as_str().unwrap()); // java.exe
-                                                                              // 在配置文件设置的JVM参数
                 for arg in server["jvm_args"].take().as_array_mut().unwrap() {
+                    // 在配置文件设置的JVM参数
                     process.arg(arg.as_str().unwrap());
                 }
                 process.arg(format!("-Xms{}", server["Xms"].take())); // JVM初始堆内存
                 process.arg(format!("-Xmx{}", server["Xmx"].take())); // JVM最大堆内存
-                process.arg(format!( // 输出和输入的编码格式
+                process.arg(format!(
+                    // 输出和输入的编码格式
                     "-Dfile.encoding={}",
                     server["encoding"].take().as_str().unwrap()
                 ));

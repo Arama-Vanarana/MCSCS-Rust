@@ -3,6 +3,7 @@ use rayon::prelude::*;
 use serde_json::{json, Value};
 use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::sync::{Arc, Mutex};
 use std::{env, fs};
 
@@ -50,7 +51,7 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
 }
 
 pub fn get_java_version(java_path: &str) -> String {
-    let output = std::process::Command::new(java_path)
+    let output = Command::new(java_path)
         .args(["-version", "2>&1"])
         .output()
         .unwrap();
