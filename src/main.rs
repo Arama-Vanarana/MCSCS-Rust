@@ -1,18 +1,31 @@
-pub(crate) mod library;
-fn main() {
-    if !library::pages::init::main().is_ok() {
+use crate::library::{
+    controllers::input,
+    pages::{create, init, start},
+};
+
+mod library;
+
+#[tokio::main]
+async fn main() {
+    if let Err(err) = init::main().await {
+        eprintln!("初始化失败: {err}");
         return;
     }
-    let start_time = std::time::Instant::now();
-
-    println!(
-        "{}",
-        serde_json::to_string_pretty(&library::controllers::java::detect_java()).unwrap()
-    );
-
-    let elapsed_time = start_time.elapsed();
-    let elapsed_ms = elapsed_time.as_millis();
-    let elapsed_secs = elapsed_time.as_secs();
-
-    println!("运行时间: {}毫秒 {}秒", elapsed_ms, elapsed_secs);
+    loop {
+        println!("1: 启动服务器");
+        println!("2: 创建服务器");
+        println!("0: 退出");
+        print!("请选择一个选项: ");
+        let input_value = input();
+        if input_value == "1" {
+            start::main();
+        } else if input_value == "2" {
+            create::main().await;
+        } else if input_value == "0" {
+            return;
+        }
+    }
 }
+
+#[cfg(test)]
+mod test;

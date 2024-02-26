@@ -1,15 +1,17 @@
+use log::error;
 use serde_json::{json, Value};
 
-async fn get_api_value(url: &str) -> Result<Value, reqwest::Error> {
-    let response = reqwest::get(url).await?;
-    let json = response.json::<Value>().await?;
-    Ok(json)
+async fn get_api_value(url: &str) -> Value {
+    let response = reqwest::get(url).await.expect("FastMirror请求失败");
+    let json = response.json::<Value>().await.expect("无法解析JSON");
+    json
 }
 
-pub async fn get_fastmirror_value() -> Result<Value, Box<dyn std::error::Error>> {
-    let data = get_api_value("https://download.fastmirror.net/api/v3").await?;
+#[doc = "获取FastMirrorAPI的返回值"]
+pub async fn get_fastmirror_value() -> Value {
+    let data = get_api_value("https://download.fastmirror.net/api/v3").await;
+    
     let mut name_map = serde_json::Map::new();
-
     if let Some(builds) = data["data"].as_array() {
         for entry in builds {
             // 获取每个对象内的 "name" 字段值
@@ -19,24 +21,18 @@ pub async fn get_fastmirror_value() -> Result<Value, Box<dyn std::error::Error>>
             }
         }
     }
-    Ok(json!(name_map))
+    json!(name_map)
 }
 
-pub async fn get_fastmirror_builds_value(
-    core: &str,
-    version: &str,
-) -> Result<Value, Box<dyn std::error::Error>> {
+#[doc = "获取FastMirrorAPI的build版本返回值"]
+pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
     let data = get_api_value(
-        format!(
-            "https://download.fastmirror.net/api/v3/{}/{}?offset=0&limit=25",
-            core, version
-        )
-        .as_str(),
+        format!("https://download.fastmirror.net/api/v3/{core}/{version}?offset=0&limit=25")
+            .as_str(),
     )
-    .await?;
+    .await;
 
     let mut name_map = serde_json::Map::new();
-
     if let Some(builds) = data["data"]["builds"].as_array() {
         for entry in builds {
             // 获取每个对象内的 "name" 字段值
@@ -46,22 +42,48 @@ pub async fn get_fastmirror_builds_value(
             }
         }
     }
-
-    Ok(json!(name_map))
+    json!(name_map)
 }
 
+pub fn get_file_sha1(file_path: &str) -> String {
+    use sha1::Digest;
+    use std::io::Read;
+
+    let mut buffer = [0u8; 1024];
+    let mut file = std::fs::File::open(file_path).expect("无法打开文件");
+    let mut hasher = sha1::Sha1::new();
+
+    loop {
+        let bytes_read = file.read(&mut buffer).unwrap();
+        if bytes_read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..bytes_read]);
+    }
+    hex::encode(hasher.finalize())
+}
+
+#[doc = "下载FastMirrorAPI返回的服务器核心"]
 pub async fn download_fastmirror_core(
     core: &str,
     mc_version: &str,
     build_version: &str,
-) -> Result<String, reqwest::Error> {
-    Ok(crate::library::controllers::aria2::download(
-        format!(
-            "https://download.fastmirror.net/download/{}/{}/{}",
-            core, mc_version, build_version
-        )
-        .as_str(),
-    )
+) -> Result<String, Box<dyn std::error::Error>> {
+    let file_path = crate::library::controllers::aria2c::download(format!(
+        "https://download.fastmirror.net/download/{core}/{mc_version}/{build_version}"
+    ))
     .await
-    .expect("下载失败"))
+    .expect("下载失败");
+    let fastmirror_sha1 =
+        crate::library::controllers::fastmirror::get_fastmirror_builds_value(core, mc_version)
+            .await[build_version]["sha1"]
+            .as_str()
+            .unwrap()
+            .to_owned();
+    let file_sha1 = get_file_sha1(&file_path);
+    if file_sha1 != fastmirror_sha1 {
+        error!("SHA1比对失败!FastMirror返回: {fastmirror_sha1}, 但此文件的SHA1为{file_sha1}");
+        return Err("SHA1比对失败!".into());
+    }
+    Ok(file_path)
 }
