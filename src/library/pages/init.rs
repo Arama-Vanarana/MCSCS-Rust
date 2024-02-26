@@ -1,20 +1,47 @@
+use crate::library::controllers::{
+    aria2c,
+    java::{detect_java, save_java_lists},
+};
+use lazy_static::lazy_static;
 use log::{debug, error, info, warn, LevelFilter};
-use log4rs::{self, append::file::FileAppender, config::{Appender, Logger, Root}, encode::pattern::PatternEncoder, Config};
+use log4rs::{
+    self,
+    append::file::FileAppender,
+    config::{Appender, Logger, Root},
+    encode::pattern::PatternEncoder,
+    Config,
+};
 use serde_json::json;
-use std::{env, error::Error, fs, path::PathBuf, process};
+use std::{env, error::Error, fs, path::PathBuf, process::Command};
+use tokio::sync::Mutex;
 
-use crate::library::controllers::{aria2c, java::{detect_java, save_java_lists}};
+lazy_static! {
+    static ref INITIALIZED: Mutex<bool> = Mutex::new(false);
+}
 
 pub async fn main() -> Result<(), Box<dyn Error>> {
-    let current_dir = env::current_dir().unwrap().join("MCSCS");
-    let log_path = current_dir
-        .join("logs")
-        .join(chrono::Local::now().format("%Y%m%d%H%M").to_string());
-    fs::create_dir_all(&log_path).expect("创建logs文件夹失败");
-    init_log(&current_dir, &log_path);
-    init_aria2(&current_dir, &log_path).await;
-    init_servers(&current_dir);
-    Ok(())
+    let mut initialized = INITIALIZED.lock().await;
+    if !*initialized {
+        match {
+            let current_dir = env::current_dir().unwrap().join("MCSCS");
+            let log_path = current_dir
+                .join("logs")
+                .join(chrono::Local::now().format("%Y%m%d%H%M").to_string());
+            fs::create_dir_all(&log_path).expect("创建logs文件夹失败");
+            init_log(&current_dir, &log_path);
+            init_aria2(&current_dir, &log_path).await;
+            init_servers(&current_dir);
+            Ok(())
+        } {
+            Ok(_) => {
+                *initialized = true;
+                Ok(())
+            }
+            Err(err) => Err(err),
+        }
+    } else {
+        Ok(())
+    }
 }
 
 fn init_log(current_dir: &PathBuf, log_path: &PathBuf) {
@@ -35,24 +62,14 @@ fn init_log(current_dir: &PathBuf, log_path: &PathBuf) {
                 .additive(false)
                 .build("app", LevelFilter::Trace),
         )
-        .build(
-            Root::builder()
-                .appender("file")
-                .build(LevelFilter::Trace),
-        )
+        .build(Root::builder().appender("file").build(LevelFilter::Trace))
         .unwrap();
 
     log4rs::init_config(config).expect("log4rs初始化失败");
 }
 
 async fn init_aria2(current_dir: &PathBuf, log_path: &PathBuf) {
-    match aria2c::call_aria2c_rpc(
-        "aria2.getVersion",
-        json!([]),
-        "check",
-    )
-    .await
-    {
+    match aria2c::call_aria2c_rpc("aria2.getVersion", json!([]), "check").await {
         Ok(version) => {
             info!(
                 "aria2c已启动: {}",
@@ -78,7 +95,7 @@ async fn init_aria2(current_dir: &PathBuf, log_path: &PathBuf) {
                     ),
                 ];
                 debug!("aria2c参数: {}", json!(args));
-                process::Command::new(execute)
+                Command::new(execute)
                     .args(args)
                     .spawn()
                     .expect("aria2c启动失败!");
@@ -95,9 +112,7 @@ fn init_servers(current_dir: &PathBuf) {
     fs::create_dir_all(&servers_current_dir).expect("创建MCSCS/servers文件夹失败");
     match fs::metadata(servers_current_dir.join("java.json")) {
         Ok(_) => info!("MCSCS/servers/java.json存在"),
-        Err(_) => save_java_lists(
-            &detect_java(),
-        ),
+        Err(_) => save_java_lists(&detect_java()),
     }
     match fs::metadata(servers_current_dir.join("config.json")) {
         Ok(_) => info!("MCSCS/servers/config.json存在"),

@@ -1,11 +1,6 @@
-use std::{env, fmt::format, path::PathBuf, process::Command};
-
-use serde_json::{json, Value};
-
-use crate::library::controllers::{
-    input,
-    server::{self, load_servers_lists},
-};
+use crate::library::controllers::{input, server::load_servers_lists};
+use serde_json::json;
+use std::{env, os::windows::process::CommandExt, process::Command};
 
 pub fn main() {
     let mut server_configs = load_servers_lists();
@@ -30,36 +25,34 @@ pub fn main() {
                 }
                 let name = server_names[value];
                 let mut server = server_configs[name].take();
-                let mut jvm_args = server["jvm_args"].take();
-                let args = jvm_args.as_array_mut().unwrap();
-                args.push(json!(format!("-Xms{}", server["Xms"].take())));
-                args.push(json!(format!("-Xmx{}", server["Xmx"].take())));
-                args.push(json!(format!(
-                    "-Dfile.encoding{}",
-                    server["encoding"].take().as_str().unwrap()
-                )));
-                args.push(json!("-jar"));
-                args.push(json!("server.jar"));
-                args.push(json!("nogui"));
-                let mut string_args = Vec::<&str>::new();
-                string_args.push("/C");
-                string_args.push("start");
-                string_args.push(server["java"]["path"].as_str().unwrap());
-                for arg in args {
-                    string_args.push(arg.as_str().unwrap());
+
+                let mut process = Command::new("cmd.exe");
+                // 执行目录
+                process.current_dir(
+                    env::current_dir()
+                        .unwrap()
+                        .join("MCSCS")
+                        .join("servers")
+                        .join(name),
+                );
+                process.arg("/C"); // 服务器关闭后自动退出
+                process.arg("start"); // 启动新窗口
+                process.raw_arg(format!("\"{name}\"")); // 标题
+                process.arg(server["java"]["path"].take().as_str().unwrap()); // java.exe
+                                                                              // 在配置文件设置的JVM参数
+                for arg in server["jvm_args"].take().as_array_mut().unwrap() {
+                    process.arg(arg.as_str().unwrap());
                 }
-                Command::new("cmd.exe")
-                    .args(&string_args)
-                    .current_dir(
-                        env::current_dir()
-                            .unwrap()
-                            .join("MCSCS")
-                            .join("servers")
-                            .join(name),
-                    )
-                    .spawn()
-                    .unwrap();
-                println!("{}", json!(string_args));
+                process.arg(format!("-Xms{}", server["Xms"].take())); // JVM初始堆内存
+                process.arg(format!("-Xmx{}", server["Xmx"].take())); // JVM最大堆内存
+                process.arg(format!( // 输出和输入的编码格式
+                    "-Dfile.encoding={}",
+                    server["encoding"].take().as_str().unwrap()
+                ));
+                process.arg("-jar"); // 使用Jar
+                process.arg("server.jar"); // Jar路径
+                process.arg("nogui"); // 禁用GUI
+                process.spawn().expect("服务器启动失败");
                 break;
             }
             Err(_) => {

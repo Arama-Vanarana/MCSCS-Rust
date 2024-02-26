@@ -153,7 +153,7 @@ fn to_bytes(byte: &str) -> u64 {
 
 pub fn xms(xmx: Option<u64>) -> u64 {
     loop {
-        print!("请输入Xms(JVM虚拟机初始内存堆)的大小: ");
+        print!("请输入Xms(JVM虚拟机初始堆内存)的大小: ");
         let input_value = input();
         let bytes = to_bytes(&input_value);
         if bytes == 0 {
@@ -178,7 +178,7 @@ pub fn xms(xmx: Option<u64>) -> u64 {
 }
 pub fn xmx(xms: u64) -> u64 {
     loop {
-        print!("请输入Xmx(JVM虚拟机初始内存堆)的大小: ");
+        print!("请输入Xmx(JVM虚拟机最大堆内存)的大小: ");
         let input_value = input();
         let bytes = to_bytes(&input_value);
         if bytes == 0 {
@@ -317,7 +317,7 @@ async fn build_version(core: &str, mc_version: &str) -> String {
         let mut index = 0;
         let mut builds = Vec::<&String>::new();
         if let Some(obj) = fastmirror.as_object() {
-            for (build, value) in obj {              
+            for (build, value) in obj {
                 println!("{index}: {build}(更新时间: {})", value["update_time"]);
                 builds.push(build);
                 index += 1;
