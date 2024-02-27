@@ -1,12 +1,14 @@
+use std::{collections::HashMap, env, fs, path::PathBuf};
+
+use log::debug;
+use serde_json::{json, Value};
+
 use crate::library::controllers::{
     fastmirror::{download_fastmirror_core, get_fastmirror_builds_value, get_fastmirror_value},
     input,
     java::{detect_java, get_java_version, load_java_lists, save_java_lists},
     server::{load_servers_lists, save_servers_lists},
 };
-use log::debug;
-use serde_json::{json, Value};
-use std::{collections::HashMap, env, fs, path::PathBuf};
 
 fn name() -> String {
     let servers = load_servers_lists();
@@ -32,7 +34,7 @@ pub fn java() -> Value {
                     debug!("{}", json!(java));
                     if let Some(version) = java["version"].as_str() {
                         if let Some(path) = java["path"].as_str() {
-                            println!("{}: {}({})", index, version, path);
+                            println!("{index}: {version}({path})");
                         } else {
                             println!("Path不存在！");
                         }
@@ -66,9 +68,7 @@ pub fn java() -> Value {
                                 println!("Java无效!");
                                 continue;
                             }
-                            let mut java = json!({
-                                "path": java_path.display().to_string(),
-                                "version": java_ver                            });
+                            let mut java = json!({"path": java_path.display().to_string(),"version": java_ver});
                             if let Value::Array(ref mut arr) = java_info.take() {
                                 arr.push(java.take());
                             }
@@ -176,6 +176,7 @@ pub fn xms(xmx: Option<u64>) -> u64 {
         }
     }
 }
+
 pub fn xmx(xms: u64) -> u64 {
     loop {
         print!("请输入Xmx(JVM虚拟机最大堆内存)的大小: ");
@@ -212,7 +213,7 @@ pub fn jvm_args(jvm_args: Option<Value>) -> Value {
             println!("{index}: {}", arg.as_str().unwrap());
             index += 1;
         }
-        println!("{}: 新参数", index);
+        println!("{index}: 新参数");
         println!("{}: 确认", index + 1);
         print!("请选择一个选项或要更改的参数(如果为空即为移除参数): ");
         let input_value = input();

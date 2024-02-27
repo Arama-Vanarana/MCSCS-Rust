@@ -1,11 +1,13 @@
-use log::debug;
-use rayon::prelude::*;
-use serde_json::{json, Value};
+use std::{env, fs};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
-use std::{env, fs};
+
+use log::debug;
+use rayon::prelude::*;
+use regex::Regex;
+use serde_json::{json, Value};
 
 fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
     if let Ok(entries) = fs::read_dir(path) {
@@ -56,7 +58,7 @@ pub fn get_java_version(java_path: &str) -> String {
         .output()
         .unwrap();
     let output_str = String::from_utf8_lossy(&output.stderr);
-    let re = regex::Regex::new(r"(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:[._](\d+))?(?:-(.+))?")
+    let re = Regex::new(r"(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:[._](\d+))?(?:-(.+))?")
         .expect("正则表达式不正确");
     // 在输出中查找第一个匹配项
     if let Some(captured) = re.captures(&output_str) {
@@ -96,7 +98,7 @@ pub fn save_java_lists(java: &Value) {
             .clone()
             .join("java.json"),
     )
-    .expect("创建servers/java.json错误");
+        .expect("创建servers/java.json错误");
     debug!("已保存到MCSCS/servers/java.json: {java}");
     serde_json::to_writer_pretty(file, &json!({"data": java})).expect("写入servers/java.json错误");
 }
@@ -109,7 +111,7 @@ pub fn load_java_lists() -> Value {
             .join("servers")
             .join("java.json"),
     )
-    .expect("读取MCSCS/servers/java.json失败");
+        .expect("读取MCSCS/servers/java.json失败");
 
     // 读取文件内容到字符串中
     let mut json_data = String::new();

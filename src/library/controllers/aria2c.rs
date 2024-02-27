@@ -1,3 +1,6 @@
+use std::{error::Error, thread::sleep, time::Duration};
+
+use indicatif::{ProgressBar, ProgressStyle};
 use log::{error, trace};
 use serde_json::{json, Value};
 
@@ -29,7 +32,7 @@ pub async fn call_aria2c_rpc(
     match reqwest::Client::new()
         .post("http://localhost:6800/jsonrpc")
         .json(&args)
-        .timeout(std::time::Duration::from_secs(1))
+        .timeout(Duration::from_secs(1))
         .send()
         .await
     {
@@ -60,17 +63,23 @@ fn format_size(size: u64) -> String {
 }
 
 #[doc = "使用Aria2c下载文件"]
-pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>> {
+pub async fn download(url: String) -> Result<String, Box<dyn Error>> {
     // 调用 aria2.addUri 来添加下载任务，并获取 GID
     let gid_json = call_aria2c_rpc("aria2.addUri", json!([[url]]), "add").await?;
     let gid = gid_json.as_str().unwrap();
-    let pb = indicatif::ProgressBar::new(0);
+    let pb = ProgressBar::new(0);
     pb.set_style(
-        indicatif::ProgressStyle::default_bar()
+        ProgressStyle::default_bar()
             .template("[{bar:50.green}] {msg}")
             .unwrap()
             .progress_chars("=> "),
     );
+    let mut status = call_aria2c_rpc("aria2.tellStatus", json!([gid, ["files"]]), "status").await?;
+    let file_path = status["files"][0]["path"]
+        .take()
+        .as_str()
+        .unwrap()
+        .replace("/", "\\");
     loop {
         let status = call_aria2c_rpc(
             "aria2.tellStatus",
@@ -82,12 +91,11 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
                     "downloadSpeed",
                     "connections",
                     "status",
-                    "files"
                 ]
             ]),
             "status",
         )
-        .await?;
+            .await?;
         // 获取已完成的大小，总大小，下载速度，剩余时间等信息
         let completed = status["completedLength"]
             .as_str()
@@ -108,7 +116,7 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
         pb.set_length(total);
 
         pb.set_position(completed);
-        
+
         let mut eta = String::new();
         if speed != 0 {
             let remaining_time_secs = (total - completed) / speed;
@@ -128,7 +136,7 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
                 }
             }
         }
-        
+
         pb.set_message(format!(
             "{}/s {}/{} CN:{} {}",
             format_size(speed),
@@ -143,10 +151,6 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
         ));
         let download_status = status["status"].as_str().unwrap_or("error");
         if download_status == "complete" {
-            let file_path = status["files"][0]["path"]
-                .as_str()
-                .unwrap()
-                .replace("/", "\\");
             pb.finish_with_message(format!("下载完成: {file_path}"));
             return Ok(file_path);
         }
@@ -156,6 +160,6 @@ pub async fn download(url: String) -> Result<String, Box<dyn std::error::Error>>
         if download_status == "paused" {
             call_aria2c_rpc("aria2.unpause", json!([gid]), "unpause").await?;
         }
-        std::thread::sleep(std::time::Duration::from_millis(200));
+        sleep(Duration::from_millis(175));
     }
 }

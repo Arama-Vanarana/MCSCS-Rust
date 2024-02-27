@@ -1,19 +1,22 @@
-use crate::library::controllers::{
-    aria2c,
-    java::{detect_java, save_java_lists},
-};
+use std::{env, error::Error, fs, path::PathBuf, process::Command};
+
+use chrono::Local;
 use lazy_static::lazy_static;
-use log::{debug, error, info, warn, LevelFilter};
+use log::{debug, error, info, LevelFilter, warn};
 use log4rs::{
     self,
     append::file::FileAppender,
     config::{Appender, Logger, Root},
-    encode::pattern::PatternEncoder,
     Config,
+    encode::pattern::PatternEncoder,
 };
 use serde_json::json;
-use std::{env, error::Error, fs, path::PathBuf, process::Command};
 use tokio::sync::Mutex;
+
+use crate::library::controllers::{
+    aria2c,
+    java::{detect_java, save_java_lists},
+};
 
 lazy_static! {
     static ref INITIALIZED: Mutex<bool> = Mutex::new(false);
@@ -26,7 +29,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
             let current_dir = env::current_dir().unwrap().join("MCSCS");
             let log_path = current_dir
                 .join("logs")
-                .join(chrono::Local::now().format("%Y%m%d%H%M").to_string());
+                .join(Local::now().format("%Y%m%d%H%M").to_string());
             fs::create_dir_all(&log_path).expect("创建logs文件夹失败");
             init_log(&current_dir, &log_path);
             init_aria2(&current_dir, &log_path).await;

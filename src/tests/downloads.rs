@@ -1,5 +1,3 @@
-use serde_json::Value;
-
 use crate::library::{
     controllers::{
         aria2c,

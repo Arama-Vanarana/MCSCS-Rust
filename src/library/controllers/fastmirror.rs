@@ -1,4 +1,4 @@
-use std::{fs, io::Read};
+use std::{error::Error, fs, io::Read};
 
 use log::{debug, error};
 use serde_json::{json, Map, Value};
@@ -7,15 +7,15 @@ use sha1::{Digest, Sha1};
 async fn get_api_value(url: &str) -> Value {
     let response = reqwest::get(url).await.expect("FastMirror请求失败");
     let json = response.json::<Value>().await.expect("无法解析JSON");
-    debug!("{url} {json}");
+    debug!("{url} -> {json}");
     json
 }
 
 #[doc = "获取FastMirrorAPI的返回值"]
 pub async fn get_fastmirror_value() -> Value {
     let data = get_api_value("https://download.fastmirror.net/api/v3").await;
-    
-    let mut name_map = serde_json::Map::new();
+
+    let mut name_map = Map::new();
     if let Some(builds) = data["data"].as_array() {
         for entry in builds {
             // 获取每个对象内的 "name" 字段值
@@ -30,11 +30,10 @@ pub async fn get_fastmirror_value() -> Value {
 
 #[doc = "获取FastMirrorAPI的build版本返回值"]
 pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
-    let data = get_api_value(
-        &format!("https://download.fastmirror.net/api/v3/{core}/{version}?offset=0&limit=25")
-            
-    )
-    .await;
+    let data = get_api_value(&format!(
+        "https://download.fastmirror.net/api/v3/{core}/{version}?offset=0&limit=25"
+    ))
+        .await;
 
     let mut name_map = Map::new();
     if let Some(builds) = data["data"]["builds"].as_array() {
@@ -69,18 +68,17 @@ pub async fn download_fastmirror_core(
     core: &str,
     mc_version: &str,
     build_version: &str,
-) -> Result<String, Box<dyn std::error::Error>> {
+) -> Result<String, Box<dyn Error>> {
     let file_path = crate::library::controllers::aria2c::download(format!(
         "https://download.fastmirror.net/download/{core}/{mc_version}/{build_version}"
     ))
-    .await
-    .expect("下载失败");
-    let fastmirror_sha1 =
-        get_fastmirror_builds_value(core, mc_version)
-            .await[build_version]["sha1"]
-            .as_str()
-            .unwrap()
-            .to_owned();
+        .await
+        .expect("下载失败");
+    let fastmirror_sha1 = get_fastmirror_builds_value(core, mc_version).await[build_version]
+        ["sha1"]
+        .as_str()
+        .unwrap()
+        .to_owned();
     let file_sha1 = get_file_sha1(&file_path);
     if file_sha1 != fastmirror_sha1 {
         error!("SHA1比对失败!FastMirror返回: {fastmirror_sha1}, 但此文件的SHA1为{file_sha1}");
