@@ -198,7 +198,7 @@ pub fn xmx(xms: u64) -> u64 {
     }
 }
 
-pub fn jvm_args(jvm_args: Option<Value>) -> Value {
+pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
     let mut args = Vec::<Value>::new();
     if let Some(jvm_args) = jvm_args {
         for arg in jvm_args.as_array().unwrap() {

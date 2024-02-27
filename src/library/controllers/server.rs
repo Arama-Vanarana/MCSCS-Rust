@@ -17,10 +17,9 @@ pub fn load_servers_lists() -> Value {
     let mut json_data = String::new();
     file.read_to_string(&mut json_data)
         .expect("读取MCSCS/servers/config.json失败");
-    // 将 JSON 字符串反序列化为 MyData 结构体实例
-    let data = serde_json::from_str::<Value>(&json_data).expect("无法解析 JSON");
+    let data = serde_json::from_str::<Value>(&json_data).expect("无法解析 JSON")["data"].take();
     debug!("从MCSCS/servers/config.json加载到的服务器配置: {data}");
-    data["data"].clone()
+    data
 }
 
 #[doc = "如果config参数是None就会删除配置"]
@@ -46,7 +45,6 @@ pub fn save_servers_lists(server: &str, config: Option<&Value>) {
             }
         }
     };
-    debug!("已保存到MCSCS/servers/config.json: {data}");
     serde_json::to_writer_pretty(file, &json!({"data": data}))
         .expect("写入MCSCS/servers/config.json错误");
 }

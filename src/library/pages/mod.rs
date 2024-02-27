@@ -1,3 +1,4 @@
+use log::debug;
 use serde_json::Value;
 
 use crate::library::controllers::{input, server::load_servers_lists};
@@ -11,11 +12,12 @@ pub mod init;
 pub mod start; //启动服务器
 
 pub fn choose_server(description: &str) -> Value {
-    let mut server_configs = load_servers_lists();
+    let server_configs = load_servers_lists();
+
     loop {
         let mut index = 0;
         let mut server_names = Vec::<&String>::new();
-        let server_configs_clone = server_configs.take();
+        let server_configs_clone = server_configs.clone();
         if let Some(server) = server_configs_clone.as_object() {
             for (server, _) in server {
                 println!("{index}: {server}");
@@ -32,7 +34,8 @@ pub fn choose_server(description: &str) -> Value {
                     continue;
                 }
                 let name = server_names[value];
-                return server_configs[name].take();
+                debug!("{server_configs}");
+                return server_configs[name].clone();
             }
             Err(_) => {
                 println!("输入错误,请重新输入!");

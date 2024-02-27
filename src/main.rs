@@ -2,6 +2,7 @@ use crate::library::{
     controllers::input,
     pages::{create, init, start},
 };
+use crate::library::pages::config;
 
 mod library;
 
@@ -14,6 +15,7 @@ async fn main() {
     loop {
         println!("1: 启动服务器");
         println!("2: 创建服务器");
+        println!("3: 配置服务器");
         println!("0: 退出");
         print!("请选择一个选项: ");
         let input_value = input();
@@ -21,6 +23,8 @@ async fn main() {
             start::main();
         } else if input_value == "2" {
             create::main().await;
+        } else if input_value == "3" {
+            config::main();
         } else if input_value == "0" {
             return;
         }
