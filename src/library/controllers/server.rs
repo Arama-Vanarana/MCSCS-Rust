@@ -36,12 +36,9 @@ pub fn save_servers_lists(server: &str, config: Option<&Value>) {
             data[server] = c.clone();
         }
         None => {
-            match &mut data {
-                Value::Object(ref mut map) => {
-                    debug!("服务器配置更改: {} -> None", server_config);
-                    map.remove(server);
-                }
-                _ => {} // 如果 JSON 不是对象类型，则不需要删除键
+            if let Value::Object(ref mut map) = &mut data {
+                debug!("服务器配置更改: {} -> None", server_config);
+                map.remove(server);
             }
         }
     };

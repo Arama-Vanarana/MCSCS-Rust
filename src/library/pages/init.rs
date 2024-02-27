@@ -1,4 +1,4 @@
-use std::{env, error::Error, fs, path::PathBuf, process::Command};
+use std::{env, error::Error, fs, path::Path, process::Command};
 
 use chrono::Local;
 use lazy_static::lazy_static;
@@ -25,7 +25,7 @@ lazy_static! {
 pub async fn main() -> Result<(), Box<dyn Error>> {
     let mut initialized = INITIALIZED.lock().await;
     if !*initialized {
-        match {
+        let res = {
             let current_dir = env::current_dir().unwrap().join("MCSCS");
             let log_path = current_dir
                 .join("logs")
@@ -35,7 +35,8 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
             init_aria2(&current_dir, &log_path).await;
             init_servers(&current_dir);
             Ok(())
-        } {
+        };
+        match res {
             Ok(_) => {
                 *initialized = true;
                 Ok(())
@@ -47,7 +48,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn init_log(current_dir: &PathBuf, log_path: &PathBuf) {
+fn init_log(current_dir: &Path, log_path: &Path) {
     fs::create_dir_all(current_dir.join("logs")).expect("创建logs文件夹失败");
     // 文件输出
     let file = FileAppender::builder()
@@ -71,7 +72,7 @@ fn init_log(current_dir: &PathBuf, log_path: &PathBuf) {
     log4rs::init_config(config).expect("log4rs初始化失败");
 }
 
-async fn init_aria2(current_dir: &PathBuf, log_path: &PathBuf) {
+async fn init_aria2(current_dir: &Path, log_path: &Path) {
     match aria2c::call_aria2c_rpc("aria2.getVersion", json!([]), "check").await {
         Ok(version) => {
             info!(
@@ -110,7 +111,7 @@ async fn init_aria2(current_dir: &PathBuf, log_path: &PathBuf) {
     }
 }
 
-fn init_servers(current_dir: &PathBuf) {
+fn init_servers(current_dir: &Path) {
     let servers_current_dir = current_dir.join("servers");
     fs::create_dir_all(&servers_current_dir).expect("创建MCSCS/servers文件夹失败");
     match fs::metadata(servers_current_dir.join("java.json")) {

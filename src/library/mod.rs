@@ -1,2 +1,2 @@
-pub mod controllers; 
+pub mod controllers;
 pub mod pages; 

@@ -1,8 +1,11 @@
+use std::io;
+use std::io::Write;
+
 use console::Term;
 use log::debug;
 use serde_json::Value;
 
-use crate::library::controllers::{input, server::load_servers_lists};
+use crate::library::controllers::server::load_servers_lists;
 
 pub mod config;
 // 配置服务器
@@ -11,6 +14,15 @@ pub mod create;
 pub mod init;
 // 初始化
 pub mod start; //启动服务器
+
+#[doc = "返回输入的内容"]
+pub fn input() -> String {
+    io::stdout().flush().expect("无法刷新stdout");
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).expect("读取 stdin 失败");
+    input = input.trim().to_string();
+    input
+}
 
 pub fn choose_server(description: &str) -> Value {
     let server_configs = load_servers_lists();

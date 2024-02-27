@@ -80,7 +80,7 @@ pub async fn download(url: String) -> Result<String, Box<dyn Error>> {
         .take()
         .as_str()
         .unwrap()
-        .replace("/", "\\");
+        .replace('/', "\\");
     loop {
         let status = call_aria2c_rpc(
             "aria2.tellStatus",

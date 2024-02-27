@@ -5,17 +5,17 @@ use serde_json::{json, Value};
 
 use crate::library::controllers::{
     fastmirror::{download_fastmirror_core, get_fastmirror_builds_value, get_fastmirror_value},
-    input,
     java::{detect_java, get_java_version, load_java_lists, save_java_lists},
     server::{load_servers_lists, save_servers_lists},
 };
+use crate::library::pages::input;
 
 fn name() -> String {
     let servers = load_servers_lists();
     loop {
         print!("请输入该服务器的名称: ");
         let name = input();
-        if let Some(_) = servers.get(&name) {
+        if servers.get(&name).is_some() {
             println!("输入错误,服务器已存在,请重新输入!");
             continue;
         }
@@ -64,7 +64,7 @@ pub fn java() -> Value {
                     if let Ok(metadata) = fs::metadata(&java_path) {
                         if metadata.is_file() {
                             let java_ver = get_java_version(&java_path.display().to_string());
-                            if java_ver == "unknown".to_string() {
+                            if java_ver == *"unknown" {
                                 println!("Java无效!");
                                 continue;
                             }
@@ -313,7 +313,7 @@ async fn mc_version(core: &str) -> String {
 }
 
 async fn build_version(core: &str, mc_version: &str) -> String {
-    let fastmirror = get_fastmirror_builds_value(&core, &mc_version).await;
+    let fastmirror = get_fastmirror_builds_value(core, mc_version).await;
     loop {
         let mut index = 0;
         let mut builds = Vec::<&String>::new();
@@ -381,7 +381,7 @@ pub async fn main() {
             if let Err(e) = fs::create_dir_all(&current_dir) {
                 println!("创建目录失败: {e}");
             }
-            if let Err(e) = fs::copy(PathBuf::from(file_path), &current_dir.join("server.jar")) {
+            if let Err(e) = fs::copy(PathBuf::from(file_path), current_dir.join("server.jar")) {
                 println!("复制核心失败: {e}");
             }
         }

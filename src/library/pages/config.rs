@@ -1,8 +1,7 @@
 use serde_json::json;
 
-use crate::library::controllers::input;
 use crate::library::controllers::server::save_servers_lists;
-use crate::library::pages::{choose_server, clear_console};
+use crate::library::pages::{choose_server, clear_console, input};
 use crate::library::pages::create::{encoding, jvm_args, xms, xmx};
 
 pub fn main() {

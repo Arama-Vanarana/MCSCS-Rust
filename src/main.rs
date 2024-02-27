@@ -1,5 +1,4 @@
-use crate::library::controllers::input;
-use crate::library::pages::{clear_console, config, create, init, start};
+use crate::library::pages::{clear_console, config, create, init, input, start};
 
 mod library;
 

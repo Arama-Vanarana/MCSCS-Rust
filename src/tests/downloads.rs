@@ -1,5 +1,3 @@
-use serde_json::json;
-
 use crate::library::{
     controllers::{
         aria2c,
@@ -10,7 +8,7 @@ use crate::library::{
     },
     pages::init,
 };
-use crate::library::controllers::aria2c::call_aria2c_rpc;
+use crate::tests::stop_aria2c;
 
 #[tokio::test]
 #[doc = "测试下载核心"]
@@ -43,17 +41,7 @@ async fn test_download_fastmirror_core() {
             .await
             .unwrap()
     );
-    match call_aria2c_rpc("aria2.shutdown", json!([]), "shutdown").await {
-        Ok(code) => {
-            if code.as_str().unwrap() != "OK" {
-                eprintln!("关闭aria2c失败: {code}");
-            }
-        }
-        Err(..) => {
-            eprintln!("关闭aria2c失败");
-        }
-    }
-    ()
+    stop_aria2c().await;
 }
 
 #[tokio::test]
@@ -91,17 +79,7 @@ async fn test_check_sha1() {
     println!("FastMirror SHA1 = {fastmirror_sha1_str}");
     println!("File SHA1 = {file_sha1}");
     println!("是否一致: {}", { file_sha1 == fastmirror_sha1_str });
-    match call_aria2c_rpc("aria2.shutdown", json!([]), "shutdown").await {
-        Ok(code) => {
-            if code.as_str().unwrap() != "OK" {
-                eprintln!("关闭aria2c失败: {code}");
-            }
-        }
-        Err(..) => {
-            eprintln!("关闭aria2c失败");
-        }
-    }
-    ()
+    stop_aria2c().await;
 }
 
 #[tokio::test]
@@ -111,24 +89,16 @@ async fn test_download_file() {
         eprintln!("初始化失败: {err}");
         return;
     }
-    let file_path = if let Ok(file_path) = aria2c::download("http://speedtest.zju.edu.cn/1000M".to_string()).await {
-        file_path
-    } else if let Err(err) = aria2c::download("http://speedtest.zju.edu.cn/1000M".to_string()).await {
-        eprintln!("下载文件失败: {err}");
-        "unknown".to_string()
-    } else {
-        unreachable!()
+    let downloads = aria2c::download("https://speedtest.zju.edu.cn/1000M".to_string()).await;
+    let file_path = match downloads {
+        Ok(file_path) => {
+            file_path
+        }
+        Err(err) => {
+            eprintln!("下载文件失败: {err}");
+            "unknown".to_string()
+        }
     };
     println!("文件路径 = {file_path}");
-    match call_aria2c_rpc("aria2.shutdown", json!([]), "shutdown").await {
-        Ok(code) => {
-            if code.as_str().unwrap() != "OK" {
-                eprintln!("关闭aria2c失败: {code}");
-            }
-        }
-        Err(..) => {
-            eprintln!("关闭aria2c失败");
-        }
-    }
-    ()
+    stop_aria2c().await;
 }

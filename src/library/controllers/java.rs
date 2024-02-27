@@ -21,10 +21,10 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
                     None => return,
                 };
 
-                if file_name.contains("$")
-                    || file_name.contains("{")
-                    || file_name.contains("}")
-                    || file_name.contains("_")
+                if file_name.contains('$')
+                    || file_name.contains('{')
+                    || file_name.contains('}')
+                    || file_name.contains('_')
                 {
                     return;
                 }
@@ -42,7 +42,7 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
                 } else if file_name == "java.exe" {
                     if let Some(java_path) = file_path.to_str() {
                         let version = get_java_version(java_path);
-                        if version != "unknown".to_string() {
+                        if version != *"unknown" {
                             let mut java_paths = java_paths.lock().unwrap();
                             java_paths.push(json!({"version": version, "path": java_path}));
                         }

@@ -1,6 +1,6 @@
 use std::{env, os::windows::process::CommandExt, process::Command};
 
-use super::choose_server;
+use crate::library::pages::choose_server;
 
 pub fn main() {
     let mut server = choose_server("需要启动");
