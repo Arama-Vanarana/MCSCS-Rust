@@ -10,6 +10,7 @@ description = "MCSCS powered by Rust"
 
 [dependencies]
 chrono = "0.4.34"
+console = "0.15.8"
 hex = "0.4.3"
 indicatif = "0.17.8"
 lazy_static = "1.4.0"

@@ -1,3 +1,4 @@
+use console::Term;
 use log::debug;
 use serde_json::Value;
 
@@ -43,4 +44,9 @@ pub fn choose_server(description: &str) -> Value {
             }
         }
     }
+}
+
+pub fn clear_console() {
+    let term = Term::stdout();
+    term.clear_screen().expect("Failed to clear screen");
 }

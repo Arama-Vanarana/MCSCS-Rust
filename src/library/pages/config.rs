@@ -2,7 +2,7 @@ use serde_json::json;
 
 use crate::library::controllers::input;
 use crate::library::controllers::server::save_servers_lists;
-use crate::library::pages::choose_server;
+use crate::library::pages::{choose_server, clear_console};
 use crate::library::pages::create::{encoding, jvm_args, xms, xmx};
 
 pub fn main() {
@@ -18,9 +18,15 @@ pub fn main() {
         print!("请选择一个选项: ");
         let input_value = input();
         if input_value == "1" {
+            println!("1GB = 1000MB");
+            println!("1MB = 1000KB");
+            println!("1KB = 1000Bytes");
             server["Xms"] = json!(xms(Some(server["Xmx"].as_u64().unwrap())));
             save_servers_lists(server_name, Some(&server));
         } else if input_value == "2" {
+            println!("1GB = 1000MB");
+            println!("1MB = 1000KB");
+            println!("1KB = 1000Bytes");
             server["Xmx"] = json!(xmx(server["Xms"].as_u64().unwrap()));
             save_servers_lists(server_name, Some(&server));
         } else if input_value == "3" {
@@ -34,5 +40,6 @@ pub fn main() {
         } else {
             println!("输入错误,请重新输入!");
         }
+        clear_console();
     }
 }

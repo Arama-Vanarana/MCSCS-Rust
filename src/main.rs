@@ -1,8 +1,5 @@
-use crate::library::{
-    controllers::input,
-    pages::{create, init, start},
-};
-use crate::library::pages::config;
+use crate::library::controllers::input;
+use crate::library::pages::{clear_console, config, create, init, start};
 
 mod library;
 
@@ -28,6 +25,7 @@ async fn main() {
         } else if input_value == "0" {
             return;
         }
+        clear_console();
     }
 }
 

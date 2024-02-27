@@ -1,13 +1,14 @@
-use std::{error::Error, thread::sleep, time::Duration};
+use std::{error::Error, time::Duration};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use log::{error, trace};
 use serde_json::{json, Value};
+use tokio::time::sleep;
 
 #[doc = r#"# 使用
 ```
 // 获取GID
-call_aria2c_rpc("aria2.addUri", json!([["http://example.com/file.torrent"]]), "1").await;
+call_aria2c_rpc("aria2.addUri", json!([["https://example.com/file.torrent"]]), "1").await;
 ```
 "#]
 pub async fn call_aria2c_rpc(
@@ -55,8 +56,8 @@ fn format_size(size: u64) -> String {
     let units = ["B", "KB", "MB", "GB", "TB"];
     let mut index = 0;
     let mut size = size as f64;
-    while size >= 1024.0 && index < units.len() - 1 {
-        size /= 1024.0;
+    while size >= 1000.0 && index < units.len() - 1 {
+        size /= 1000.0;
         index += 1;
     }
     format!("{:.2}{}", size, units[index])
@@ -125,20 +126,17 @@ pub async fn download(url: String) -> Result<String, Box<dyn Error>> {
                 let remaining_minutes = (remaining_time_secs % 3600) / 60;
                 let remaining_seconds = remaining_time_secs % 60;
                 if remaining_hours > 0 {
-                    eta = format!(
-                        "ETA:{}h {}m {}s",
-                        remaining_hours, remaining_minutes, remaining_seconds
-                    );
+                    eta = format!("ETA:{remaining_hours}h {remaining_minutes}m {remaining_seconds}s");
                 } else if remaining_minutes > 0 {
-                    eta = format!("ETA:{}m {}s", remaining_minutes, remaining_seconds);
+                    eta = format!("ETA:{remaining_minutes}m {remaining_seconds}s");
                 } else if remaining_seconds > 0 {
-                    eta = format!("ETA:{}s", remaining_seconds);
+                    eta = format!("ETA:{remaining_seconds}s");
                 }
             }
         }
 
         pb.set_message(format!(
-            "{}/s {}/{} CN:{} {}",
+            "{}/s {}/{} CN:{} {eta}",
             format_size(speed),
             format_size(completed),
             format_size(total),
@@ -146,8 +144,7 @@ pub async fn download(url: String) -> Result<String, Box<dyn Error>> {
                 .as_str()
                 .unwrap_or("0")
                 .parse::<u64>()
-                .unwrap(),
-            eta,
+                .unwrap()
         ));
         let download_status = status["status"].as_str().unwrap_or("error");
         if download_status == "complete" {
@@ -160,6 +157,6 @@ pub async fn download(url: String) -> Result<String, Box<dyn Error>> {
         if download_status == "paused" {
             call_aria2c_rpc("aria2.unpause", json!([gid]), "unpause").await?;
         }
-        sleep(Duration::from_millis(175));
+        sleep(Duration::from_millis(175)).await;
     }
 }
