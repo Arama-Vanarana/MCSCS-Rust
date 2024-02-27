@@ -112,8 +112,8 @@ fabric.properties
 rust-project.json
 
 ### MCSCS template
-MCSCS/** 
+MCSCS/*
 
-# Aria2c配置文件
-!MCSCS/aria2c/**
+# Aria2c
+!MCSCS/aria2c
 MCSCS/aria2c/aria2c.exe
