@@ -1,5 +1,3 @@
-use std::io::Write;
-
 pub mod aria2c;
 // Aria2下载引擎
 pub mod fastmirror;

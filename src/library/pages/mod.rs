@@ -8,12 +8,10 @@ use serde_json::Value;
 use crate::library::controllers::server::load_servers_lists;
 
 pub mod config;
-// 配置服务器
 pub mod create;
-// 创建服务器
 pub mod init;
-// 初始化
-pub mod start; //启动服务器
+pub mod start;
+pub mod delete;
 
 #[doc = "返回输入的内容"]
 pub fn input() -> String {
@@ -37,6 +35,9 @@ pub fn choose_server(description: &str) -> Value {
                 server_names.push(server);
                 index += 1;
             }
+        }
+        if index == 0 {
+            return Value::Null;
         }
         print!("请选择一个{description}的服务器: ");
         let input_value = input();

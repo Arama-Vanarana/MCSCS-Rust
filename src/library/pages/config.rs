@@ -6,7 +6,10 @@ use crate::library::pages::create::{encoding, jvm_args, xms, xmx};
 
 pub fn main() {
     let mut server = choose_server("需要配置");
-    println!("{}", server);
+    if server.is_null() {
+        println!("你还没有创建任何一个服务器!");
+        return;
+    }
     let server_name = &server["name"].as_str().unwrap().to_string();
     loop {
         println!("1: Xms: JVM初始堆内存");

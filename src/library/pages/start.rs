@@ -4,6 +4,10 @@ use crate::library::pages::choose_server;
 
 pub fn main() {
     let mut server = choose_server("需要启动");
+    if server.is_null() {
+        println!("你还没有创建任何一个服务器!");
+        return;
+    }
     let mut process = Command::new("cmd.exe");
     let name = server["name"].as_str().unwrap();
     // 执行目录

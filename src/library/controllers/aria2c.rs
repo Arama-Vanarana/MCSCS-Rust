@@ -52,6 +52,19 @@ pub async fn call_aria2c_rpc(
     }
 }
 
+pub async fn stop_aria2c() {
+    match call_aria2c_rpc("aria2.shutdown", json!([]), "shutdown").await {
+        Ok(code) => {
+            if code.as_str().unwrap() != "OK" {
+                eprintln!("关闭aria2c失败: {code}");
+            }
+        }
+        Err(..) => {
+            eprintln!("关闭aria2c失败");
+        }
+    }
+}
+
 fn format_size(size: u64) -> String {
     let units = ["B", "KB", "MB", "GB", "TB"];
     let mut index = 0;
