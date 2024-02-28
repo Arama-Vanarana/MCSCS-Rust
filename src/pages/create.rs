@@ -3,13 +3,11 @@ use std::{collections::HashMap, env, fs, path::PathBuf};
 use log::debug;
 use serde_json::{json, Value};
 
-use crate::library::{
-    controllers::{
-        fastmirror::{download_fastmirror_core, get_fastmirror_builds_value, get_fastmirror_value},
-        java::{detect_java, get_java_version, load_java_lists, save_java_lists},
-        server::{load_servers_lists, save_servers_lists},
-    },
+use crate::{
+    fastmirror::{download_fastmirror_core, get_fastmirror_builds_value, get_fastmirror_value},
+    java::{detect_java, get_java_version, load_java_lists, save_java_lists},
     pages::input,
+    server::{load_servers_lists, save_servers_lists},
 };
 
 fn name() -> String {

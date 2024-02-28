@@ -4,6 +4,8 @@ use log::{debug, error};
 use serde_json::{json, Map, Value};
 use sha1::{Digest, Sha1};
 
+use super::aria2c;
+
 async fn get_api_value(url: &str) -> Value {
     let response = reqwest::get(url).await.expect("FastMirror请求失败");
     let json = response.json::<Value>().await.expect("无法解析JSON");
@@ -69,7 +71,7 @@ pub async fn download_fastmirror_core(
     mc_version: &str,
     build_version: &str,
 ) -> Result<String, Box<dyn Error>> {
-    let file_path = crate::library::controllers::aria2c::download(format!(
+    let file_path = aria2c::download(format!(
         "https://download.fastmirror.net/download/{core}/{mc_version}/{build_version}"
     ))
     .await

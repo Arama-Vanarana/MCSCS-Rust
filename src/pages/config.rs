@@ -1,13 +1,15 @@
 use serde_json::json;
 
-use crate::library::{
-    controllers::server::save_servers_lists,
+use crate::{
     pages::{
-        choose_server, clear_console,
+        clear_console,
         create::{encoding, jvm_args, xms, xmx},
         input,
     },
+    server::save_servers_lists,
 };
+
+use super::choose_server;
 
 pub fn main() {
     let mut server = choose_server("需要配置");
@@ -42,9 +44,10 @@ pub fn main() {
         } else if input_value == "4" {
             server["jvm_args"] = json!(jvm_args(Some(&server["jvm_args"])));
             save_servers_lists(server_name, Some(&server));
-        } else if input_value == "0" {
-            break;
         } else {
+            if input_value == "0" {
+                break;
+            }
             println!("输入错误,请重新输入!");
         }
         clear_console();

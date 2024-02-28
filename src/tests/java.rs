@@ -1,4 +1,4 @@
-use crate::library::controllers::java::detect_java;
+use crate::java::detect_java;
 
 #[tokio::test]
 #[doc = "测试寻找Java环境"]

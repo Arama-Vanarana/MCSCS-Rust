@@ -2,18 +2,18 @@ use std::{env, error::Error, fs, path::Path, process::Command};
 
 use chrono::Local;
 use lazy_static::lazy_static;
-use log::{debug, error, info, LevelFilter, warn};
+use log::{debug, error, info, warn, LevelFilter};
 use log4rs::{
     self,
     append::file::FileAppender,
     config::{Appender, Logger, Root},
-    Config,
     encode::pattern::PatternEncoder,
+    Config,
 };
 use serde_json::json;
 use tokio::sync::Mutex;
 
-use crate::library::controllers::{
+use crate::{
     aria2c,
     java::{detect_java, save_java_lists},
 };

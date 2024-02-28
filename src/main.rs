@@ -1,6 +1,13 @@
-use crate::library::pages::{clear_console, config, create, delete, init, input, start};
+// use crate::library::pages::{clear_console, config, create, delete, init, input, start};
 
-mod library;
+mod pages;
+use crate::pages::{clear_console, input};
+use crate::pages::{config, create, delete, init, start};
+
+pub(crate) mod aria2c;
+pub(crate) mod fastmirror;
+pub(crate) mod java;
+pub(crate) mod server;
 
 #[tokio::main]
 async fn main() {
@@ -32,4 +39,7 @@ async fn main() {
 }
 
 #[cfg(test)]
-mod tests;
+mod tests {
+    mod downloads;
+    mod java;
+}

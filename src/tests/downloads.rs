@@ -1,13 +1,4 @@
-use crate::library::{
-    controllers::{
-        aria2c::{self},
-        fastmirror::{
-            download_fastmirror_core, get_fastmirror_builds_value, get_fastmirror_value,
-            get_file_sha1,
-        },
-    },
-    pages::init,
-};
+use crate::{aria2c, fastmirror::{download_fastmirror_core, get_fastmirror_builds_value, get_fastmirror_value, get_file_sha1}, pages::init};
 
 async fn get_new_fastmirror_info(core: &str) -> (String, String) {
     let fastmirror = get_fastmirror_value().await;

@@ -4,7 +4,7 @@ use console::Term;
 use log::debug;
 use serde_json::Value;
 
-use super::controllers::server::load_servers_lists;
+use super::server::load_servers_lists;
 
 pub mod config;
 pub mod create;
