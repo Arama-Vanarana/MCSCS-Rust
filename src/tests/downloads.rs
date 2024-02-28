@@ -1,6 +1,6 @@
 use crate::library::{
     controllers::{
-        aria2c::{self, stop_aria2c},
+        aria2c::{self},
         fastmirror::{
             download_fastmirror_core, get_fastmirror_builds_value, get_fastmirror_value,
             get_file_sha1,
@@ -45,7 +45,6 @@ async fn test_download_fastmirror_core() {
             .await
             .unwrap()
     );
-    stop_aria2c().await;
 }
 
 #[tokio::test]
@@ -67,7 +66,6 @@ async fn test_check_sha1() {
     println!("FastMirror SHA1 = {fastmirror_sha1_str}");
     println!("File SHA1 = {file_sha1}");
     println!("是否一致: {}", { file_sha1 == fastmirror_sha1_str });
-    stop_aria2c().await;
 }
 
 #[tokio::test]
@@ -88,5 +86,4 @@ async fn test_download_file() {
         }
     };
     println!("文件路径 = {file_path}");
-    stop_aria2c().await;
 }

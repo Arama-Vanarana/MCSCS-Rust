@@ -1,4 +1,3 @@
-use crate::library::controllers::aria2c::stop_aria2c;
 use crate::library::pages::{clear_console, config, create, delete, init, input, start};
 
 mod library;
@@ -26,7 +25,6 @@ async fn main() {
         } else if input_value == "4" {
             delete::main();
         } else if input_value == "0" {
-            stop_aria2c().await;
             return;
         }
         clear_console();
