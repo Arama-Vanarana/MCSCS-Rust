@@ -39,7 +39,7 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
                     return;
                 }
 
-                if file_path.is_dir() && !["Windows", "AppData"].contains(&file_name.as_str()) {
+                if file_path.is_dir() && !"Windows".contains(file_name.as_str()) {
                     search_file(&file_path, java_paths);
                 } else if file_name == "java.exe" {
                     if let Some(java_path) = file_path.to_str() {
@@ -87,7 +87,7 @@ pub fn detect_java() -> Value {
     });
 
     let java = json!(*java_paths.lock().unwrap());
-    debug!("成功遍历到的Java环境: {java}");
+    // debug!("成功遍历到的Java环境: {java}");
     java
 }
 
