@@ -109,7 +109,7 @@ pub async fn download(url: String) -> Result<String, Box<dyn Error>> {
             ]),
             "status",
         )
-            .await?;
+        .await?;
         // 获取已完成的大小，总大小，下载速度，剩余时间等信息
         let completed = status["completedLength"]
             .as_str()
@@ -139,7 +139,8 @@ pub async fn download(url: String) -> Result<String, Box<dyn Error>> {
                 let remaining_minutes = (remaining_time_secs % 3600) / 60;
                 let remaining_seconds = remaining_time_secs % 60;
                 if remaining_hours > 0 {
-                    eta = format!("ETA:{remaining_hours}h {remaining_minutes}m {remaining_seconds}s");
+                    eta =
+                        format!("ETA:{remaining_hours}h {remaining_minutes}m {remaining_seconds}s");
                 } else if remaining_minutes > 0 {
                     eta = format!("ETA:{remaining_minutes}m {remaining_seconds}s");
                 } else if remaining_seconds > 0 {

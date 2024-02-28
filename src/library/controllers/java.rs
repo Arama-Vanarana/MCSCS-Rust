@@ -1,8 +1,10 @@
-use std::{env, fs};
-use std::io::Read;
-use std::path::{Path, PathBuf};
-use std::process::Command;
-use std::sync::{Arc, Mutex};
+use std::{
+    env, fs,
+    io::Read,
+    path::{Path, PathBuf},
+    process::Command,
+    sync::{Arc, Mutex},
+};
 
 use log::debug;
 use rayon::prelude::*;
@@ -98,7 +100,7 @@ pub fn save_java_lists(java: &Value) {
             .clone()
             .join("java.json"),
     )
-        .expect("创建servers/java.json错误");
+    .expect("创建servers/java.json错误");
     debug!("已保存到MCSCS/servers/java.json: {java}");
     serde_json::to_writer_pretty(file, &json!({"data": java})).expect("写入servers/java.json错误");
 }
@@ -111,7 +113,7 @@ pub fn load_java_lists() -> Value {
             .join("servers")
             .join("java.json"),
     )
-        .expect("读取MCSCS/servers/java.json失败");
+    .expect("读取MCSCS/servers/java.json失败");
 
     // 读取文件内容到字符串中
     let mut json_data = String::new();

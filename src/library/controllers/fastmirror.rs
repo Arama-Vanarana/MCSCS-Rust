@@ -33,7 +33,7 @@ pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
     let data = get_api_value(&format!(
         "https://download.fastmirror.net/api/v3/{core}/{version}?offset=0&limit=25"
     ))
-        .await;
+    .await;
 
     let mut name_map = Map::new();
     if let Some(builds) = data["data"]["builds"].as_array() {
@@ -72,8 +72,8 @@ pub async fn download_fastmirror_core(
     let file_path = crate::library::controllers::aria2c::download(format!(
         "https://download.fastmirror.net/download/{core}/{mc_version}/{build_version}"
     ))
-        .await
-        .expect("下载失败");
+    .await
+    .expect("下载失败");
     let fastmirror_sha1 = get_fastmirror_builds_value(core, mc_version).await[build_version]
         ["sha1"]
         .as_str()

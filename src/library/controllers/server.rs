@@ -11,7 +11,7 @@ pub fn load_servers_lists() -> Value {
             .join("servers")
             .join("config.json"),
     )
-        .expect("读取MCSCS/servers/config.json失败");
+    .expect("读取MCSCS/servers/config.json失败");
 
     // 读取文件内容到字符串中
     let mut json_data = String::new();

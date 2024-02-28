@@ -6,5 +6,5 @@ async fn test_detect_java() {
     println!(
         "{}",
         serde_json::to_string_pretty(&detect_java()).unwrap()
-    );
+    )
 }

@@ -1,5 +1,7 @@
-use crate::library::controllers::server::save_servers_lists;
-use crate::library::pages::{choose_server, input};
+use crate::library::{
+    controllers::server::save_servers_lists,
+    pages::{choose_server, input},
+};
 
 pub fn main() {
     let server = choose_server("需要删除");

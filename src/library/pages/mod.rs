@@ -1,17 +1,16 @@
-use std::io;
-use std::io::Write;
+use std::io::{self, Write};
 
 use console::Term;
 use log::debug;
 use serde_json::Value;
 
-use crate::library::controllers::server::load_servers_lists;
+use super::controllers::server::load_servers_lists;
 
 pub mod config;
 pub mod create;
+pub mod delete;
 pub mod init;
 pub mod start;
-pub mod delete;
 
 #[doc = "返回输入的内容"]
 pub fn input() -> String {
@@ -22,6 +21,7 @@ pub fn input() -> String {
     input
 }
 
+#[doc = "返回用户选择的服务器"]
 pub fn choose_server(description: &str) -> Value {
     let server_configs = load_servers_lists();
 
@@ -59,6 +59,7 @@ pub fn choose_server(description: &str) -> Value {
     }
 }
 
+#[doc = "清空控制台"]
 pub fn clear_console() {
     let term = Term::stdout();
     term.clear_screen().expect("Failed to clear screen");

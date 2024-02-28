@@ -1,8 +1,13 @@
 use serde_json::json;
 
-use crate::library::controllers::server::save_servers_lists;
-use crate::library::pages::{choose_server, clear_console, input};
-use crate::library::pages::create::{encoding, jvm_args, xms, xmx};
+use crate::library::{
+    controllers::server::save_servers_lists,
+    pages::{
+        choose_server, clear_console,
+        create::{encoding, jvm_args, xms, xmx},
+        input,
+    },
+};
 
 pub fn main() {
     let mut server = choose_server("需要配置");
