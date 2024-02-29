@@ -1,7 +1,7 @@
 use std::io::{self, Write};
 
 use console::Term;
-use log::debug;
+use log::{debug, error};
 use serde_json::Value;
 
 use crate::server::load_servers_lists;
@@ -51,7 +51,8 @@ pub fn choose_server(description: &str) -> Value {
                 debug!("{server_configs}");
                 return server_configs[name].clone();
             }
-            Err(_) => {
+            Err(e) => {
+                error!("{e}");
                 println!("输入错误,请重新输入!");
                 continue;
             }

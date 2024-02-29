@@ -41,7 +41,10 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
                 *initialized = true;
                 Ok(())
             }
-            Err(err) => Err(err),
+            Err(err) => {
+                error!("{err}");
+                Err(err)
+            }
         }
     } else {
         Ok(())

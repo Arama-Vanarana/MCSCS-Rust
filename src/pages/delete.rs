@@ -14,10 +14,10 @@ pub fn main() {
         if input_value == "y" || input_value == "yes" {
             save_servers_lists(server["name"].as_str().unwrap(), None);
             break;
-        } else if input_value == "n" || input_value == "no" {
-            break;
-        } else {
-            println!("输入错误,请重新输入!");
         }
+        if input_value == "n" || input_value == "no" {
+            break;
+        }
+        println!("输入错误,请重新输入!");
     }
 }

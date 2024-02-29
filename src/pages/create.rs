@@ -1,6 +1,6 @@
 use std::{collections::HashMap, env, fs, path::PathBuf};
 
-use log::debug;
+use log::{debug, error};
 use serde_json::{json, Value};
 
 use crate::{
@@ -86,7 +86,8 @@ pub fn java() -> Value {
                 println!("{java_info}, {choice}");
                 return java_info[choice].take();
             }
-            Err(_) => {
+            Err(e) => {
+                error!("{e}");
                 println!("输入错误,请重新输入!");
             }
         }
@@ -147,7 +148,10 @@ fn to_bytes(byte: &str) -> u64 {
     // Convert the numeric part and multiply by the factor
     match num_part.parse::<u64>() {
         Ok(num) => num * conversion_factor,
-        Err(_) => 0,
+        Err(e) => {
+            error!("{e}");
+            0
+        }
     }
 }
 
@@ -241,7 +245,8 @@ pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
                 }
                 continue;
             }
-            Err(_) => {
+            Err(e) => {
+                error!("{e}");
                 println!("输入错误,请重新输入!");
                 continue;
             }
@@ -271,7 +276,8 @@ async fn core() -> String {
                 }
                 return cores[value].clone();
             }
-            Err(_) => {
+            Err(e) => {
+                error!("{e}");
                 println!("输入错误,请重新输入!");
                 continue;
             }
@@ -304,7 +310,8 @@ async fn mc_version(core: &str) -> String {
                 }
                 return mc_versions[value].to_string();
             }
-            Err(_) => {
+            Err(e) => {
+                error!("{e}");
                 println!("输入错误,请重新输入!");
                 continue;
             }
@@ -334,7 +341,8 @@ async fn build_version(core: &str, mc_version: &str) -> String {
                 }
                 return builds[value].clone();
             }
-            Err(_) => {
+            Err(e) => {
+                error!("{e}");
                 println!("输入错误,请重新输入!");
                 continue;
             }
@@ -398,5 +406,4 @@ pub async fn main() {
     );
 
     save_servers_lists(&name, Some(&configs));
-    println!("{}", serde_json::to_string_pretty(&configs).unwrap());
 }

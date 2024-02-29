@@ -4,7 +4,7 @@ use log::{debug, error};
 use serde_json::{json, Map, Value};
 use sha1::{Digest, Sha1};
 
-use super::aria2c;
+use crate::aria2c;
 
 async fn get_api_value(url: &str) -> Value {
     let response = reqwest::get(url).await.expect("FastMirror请求失败");
