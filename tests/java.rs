@@ -1,4 +1,4 @@
-use crate::java::detect_java;
+use mcscs::java::detect_java;
 
 #[tokio::test]
 #[doc = "测试寻找Java环境"]

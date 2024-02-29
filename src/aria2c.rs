@@ -1,7 +1,8 @@
-use std::{error::Error, time::Duration};
+use std::{error::Error as StdError, time::Duration};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use log::{error, trace};
+use reqwest::{Client, Error as ReqwestError};
 use serde_json::{json, Value};
 use tokio::time::sleep;
 
@@ -11,11 +12,7 @@ use tokio::time::sleep;
 call_aria2c_rpc("aria2.addUri", json!([["https://example.com/file.torrent"]]), "1").await;
 ```
 "#]
-pub async fn call_aria2c_rpc(
-    method: &str,
-    params: Value,
-    id: &str,
-) -> Result<Value, reqwest::Error> {
+pub async fn call_aria2c_rpc(method: &str, params: Value, id: &str) -> Result<Value, ReqwestError> {
     // 合并参数
     let merged_params = {
         let mut merged_params = json!(["token:MCSCS"]).as_array().unwrap_or(&vec![]).clone();
@@ -30,8 +27,8 @@ pub async fn call_aria2c_rpc(
     });
     trace!("aria2c <- {}", args);
     // 发送请求
-    match reqwest::Client::new()
-        .post("http://localhost:6800/jsonrpc")
+    match Client::new()
+        .get("http://localhost:6800/jsonrpc")
         .json(&args)
         .timeout(Duration::from_secs(1))
         .send()
@@ -64,7 +61,7 @@ fn format_size(size: u64) -> String {
 }
 
 #[doc = "使用Aria2c下载文件"]
-pub async fn download(url: String) -> Result<String, Box<dyn Error>> {
+pub async fn download(url: String) -> Result<String, Box<dyn StdError>> {
     // 调用 aria2.addUri 来添加下载任务，并获取 GID
     let gid_json = call_aria2c_rpc("aria2.addUri", json!([[url]]), "add").await?;
     let gid = gid_json.as_str().unwrap();

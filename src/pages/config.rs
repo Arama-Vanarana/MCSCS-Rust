@@ -2,14 +2,12 @@ use serde_json::json;
 
 use crate::{
     pages::{
-        clear_console,
+        choose_server, clear_console,
         create::{encoding, jvm_args, xms, xmx},
         input,
     },
     server::save_servers_lists,
 };
-
-use super::choose_server;
 
 pub fn main() {
     let mut server = choose_server("需要配置");

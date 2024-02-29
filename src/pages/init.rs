@@ -31,7 +31,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
                 .join("logs")
                 .join(Local::now().format("%Y%m%d%H%M").to_string());
             fs::create_dir_all(&log_path).expect("创建logs文件夹失败");
-            init_log(&current_dir, &log_path);
+            init_log(&log_path);
             init_aria2(&current_dir, &log_path).await;
             init_servers(&current_dir);
             Ok(())
@@ -48,8 +48,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn init_log(current_dir: &Path, log_path: &Path) {
-    fs::create_dir_all(current_dir.join("logs")).expect("创建logs文件夹失败");
+fn init_log(log_path: &Path) {
     // 文件输出
     let file = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new(

@@ -1,13 +1,5 @@
-// use crate::library::pages::{clear_console, config, create, delete, init, input, start};
-
-mod pages;
-use crate::pages::{clear_console, input};
-use crate::pages::{config, create, delete, init, start};
-
-pub(crate) mod aria2c;
-pub(crate) mod fastmirror;
-pub(crate) mod java;
-pub(crate) mod server;
+use mcscs::pages::{clear_console, input};
+use mcscs::pages::{config, create, delete, init, start};
 
 #[tokio::main]
 async fn main() {
@@ -36,10 +28,4 @@ async fn main() {
         }
         clear_console();
     }
-}
-
-#[cfg(test)]
-mod tests {
-    mod downloads;
-    mod java;
 }
