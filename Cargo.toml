@@ -6,10 +6,6 @@ license = "GPL-3.0"
 authors = ["Arama <3584075812@qq.com>"]
 description = "MCSCS powered by Rust"
 
-# [[test]]
-# name = "mcscs-tests"
-# path = "tests/lib.rs"
-
 [dependencies]
 chrono = "0.4.34"
 console = "0.15.8"
