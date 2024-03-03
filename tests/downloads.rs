@@ -46,8 +46,8 @@ async fn test_check_sha1() {
         return;
     }
     let (mc_version, build_version) = get_new_fastmirror_info("Mohist").await;
-    let fastmirror = get_fastmirror_builds_value("Mohist", &mc_version).await;
-    let fastmirror_sha1 = fastmirror.clone()[&build_version]["sha1"].take();
+    let mut fastmirror = get_fastmirror_builds_value("Mohist", &mc_version).await;
+    let fastmirror_sha1 = fastmirror[&build_version]["sha1"].take();
     let fastmirror_sha1_str = fastmirror_sha1.as_str().unwrap();
     let file_path = download_fastmirror_core("Mohist", &mc_version, &build_version)
         .await

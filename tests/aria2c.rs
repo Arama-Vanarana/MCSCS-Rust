@@ -1,5 +1,3 @@
-extern crate mcscs;
-
 use mcscs::{aria2c::call_aria2c_rpc, pages::init};
 use serde_json::json;
 

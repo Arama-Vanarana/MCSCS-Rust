@@ -21,17 +21,17 @@ pub fn main() {
     process.arg("/C"); // 服务器关闭后自动退出
     process.arg("start"); // 启动新窗口
     process.raw_arg(format!("\"{name}\"")); // 标题
-    process.arg(server["java"]["path"].take().as_str().unwrap()); // java.exe
-    for arg in server["jvm_args"].take().as_array_mut().unwrap() {
+    process.arg(server["java"]["path"].as_str().unwrap()); // java.exe
+    for arg in server["jvm_args"].as_array_mut().unwrap() {
         // 在配置文件设置的JVM参数
         process.arg(arg.as_str().unwrap());
     }
-    process.arg(format!("-Xms{}", server["Xms"].take())); // JVM初始堆内存
-    process.arg(format!("-Xmx{}", server["Xmx"].take())); // JVM最大堆内存
+    process.arg(format!("-Xms{}", server["Xms"])); // JVM初始堆内存
+    process.arg(format!("-Xmx{}", server["Xmx"])); // JVM最大堆内存
     process.arg(format!(
         // 输出和输入的编码格式
         "-Dfile.encoding={}",
-        server["encoding"].take().as_str().unwrap()
+        server["encoding"].as_str().unwrap()
     ));
     process.arg("-jar"); // 使用Jar
     process.arg("server.jar"); // Jar路径

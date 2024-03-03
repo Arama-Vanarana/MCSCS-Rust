@@ -6,10 +6,9 @@ license = "GPL-3.0"
 authors = ["Arama <3584075812@qq.com>"]
 description = "MCSCS powered by Rust"
 
-[lib]
-path = "src/lib.rs"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# [[test]]
+# name = "mcscs-tests"
+# path = "tests/lib.rs"
 
 [dependencies]
 chrono = "0.4.34"
@@ -17,7 +16,7 @@ console = "0.15.8"
 hex = "0.4.3"
 indicatif = "0.17.8"
 lazy_static = "1.4.0"
-log = "0.4.20"
+log = "0.4.21"
 log4rs = "1.3.0"
 rayon = "1.9.0"
 regex = "1.10.3"

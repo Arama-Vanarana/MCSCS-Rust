@@ -69,7 +69,7 @@ pub fn java() -> Value {
                                 continue;
                             }
                             let mut java = json!({"path": java_path.display().to_string(),"version": java_ver});
-                            if let Value::Array(ref mut arr) = java_info.take() {
+                            if let Value::Array(ref mut arr) = java_info {
                                 arr.push(java.take());
                             }
                             save_java_lists(&java_info);

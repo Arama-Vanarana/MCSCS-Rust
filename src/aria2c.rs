@@ -28,7 +28,7 @@ pub async fn call_aria2c_rpc(method: &str, params: Value, id: &str) -> Result<Va
     trace!("aria2c <- {}", args);
     // 发送请求
     match Client::new()
-        .get("http://localhost:6800/jsonrpc")
+        .post("http://localhost:6800/jsonrpc")
         .json(&args)
         .timeout(Duration::from_secs(1))
         .send()
@@ -72,9 +72,8 @@ pub async fn download(url: String) -> Result<String, Box<dyn StdError>> {
             .unwrap()
             .progress_chars("=> "),
     );
-    let mut status = call_aria2c_rpc("aria2.tellStatus", json!([gid, ["files"]]), "status").await?;
+    let status = call_aria2c_rpc("aria2.tellStatus", json!([gid, ["files"]]), "status").await?;
     let file_path = status["files"][0]["path"]
-        .take()
         .as_str()
         .unwrap()
         .replace('/', "\\");
