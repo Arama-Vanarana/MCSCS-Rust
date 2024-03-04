@@ -1,4 +1,10 @@
-use mcscs::{aria2c, fastmirror::{download_fastmirror_core, get_fastmirror_builds_value, get_fastmirror_value, get_file_sha1}, pages::init};
+use mcscs::{
+    aria2c,
+    fastmirror::{
+        download_fastmirror_core, get_fastmirror_builds_value, get_fastmirror_value, get_file_sha1,
+    },
+    pages::init,
+};
 
 async fn get_new_fastmirror_info(core: &str) -> (String, String) {
     let fastmirror = get_fastmirror_value().await;
@@ -35,6 +41,7 @@ async fn test_download_fastmirror_core() {
         download_fastmirror_core("Mohist", &mc_version, &build_version)
             .await
             .unwrap()
+            .display()
     );
 }
 
@@ -53,7 +60,7 @@ async fn test_check_sha1() {
         .await
         .unwrap();
     let file_sha1 = get_file_sha1(&file_path);
-    println!("文件路径 = {file_path}");
+    println!("文件路径 = {}", file_path.display());
     println!("FastMirror SHA1 = {fastmirror_sha1_str}");
     println!("File SHA1 = {file_sha1}");
     println!("是否一致: {}", { file_sha1 == fastmirror_sha1_str });
@@ -66,11 +73,11 @@ async fn test_download_file() {
         eprintln!("初始化失败: {err}");
         return;
     }
-    let downloads = aria2c::download("https://speedtest.zju.edu.cn/1000M".to_string()).await;
+    let downloads =
+        aria2c::download("https://speed.cloudflare.com/__down?during=download&bytes=104857600")
+            .await;
     let file_path = match downloads {
-        Ok(file_path) => {
-            file_path
-        }
+        Ok(file_path) => file_path,
         Err(err) => {
             eprintln!("下载文件失败: {err}");
             "unknown".to_string()

@@ -7,7 +7,7 @@ async fn test_get_aria2c_version() {
         eprintln!("初始化失败: {err}");
         return;
     }
-    match call_aria2c_rpc("aria2.getVersion", json!([]), "get_version").await {
+    match call_aria2c_rpc("aria2.addUri", json!([["https://speedtest.zju.edu.cn/1000M"]]), "test").await {
         Ok(result) => {
             println!("{}", serde_json::to_string_pretty(&result).unwrap());
         }
