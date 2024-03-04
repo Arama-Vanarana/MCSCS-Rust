@@ -385,6 +385,12 @@ pub fn server_args(server_args: Option<&Value>) -> Value {
     }
 }
 
+/// 返回用户选择的服务器核心
+///
+/// # 使用
+/// ```
+/// let core = core().await;
+/// ```
 pub async fn core() -> String {
     let fastmirror = get_fastmirror_value().await;
     loop {
@@ -416,6 +422,13 @@ pub async fn core() -> String {
     }
 }
 
+/// 返回用户选择的服务器核心支持的Minecraft版本
+///
+/// # 使用
+/// ```
+/// let core = core().await;
+/// let mc_version = mc_version(&core).await;
+/// ```
 pub async fn mc_version(core: &str) -> String {
     let fastmirror = get_fastmirror_value().await;
     loop {
@@ -450,6 +463,14 @@ pub async fn mc_version(core: &str) -> String {
     }
 }
 
+/// 返回用户选择的构建版本
+///
+/// # 使用
+/// ```
+/// let core = core().await;
+/// let mc_version = mc_version(&core).await;
+/// let build_version = build_version(&core, &mc_version).await;
+/// ```
 pub async fn build_version(core: &str, mc_version: &str) -> String {
     let fastmirror = get_fastmirror_builds_value(core, mc_version).await;
     loop {
