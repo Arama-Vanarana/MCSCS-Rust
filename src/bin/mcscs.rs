@@ -1,4 +1,4 @@
-use mcscs::pages::{clear_console, input};
+use mcscs::pages::{clear_console, input, pause};
 use mcscs::pages::{config, create, delete, init, start};
 
 #[tokio::main]
@@ -15,6 +15,10 @@ async fn main() {
         println!("0: 退出");
         print!("请选择一个选项: ");
         let input_value = input();
+        if input_value == "0" {
+            return;
+        }
+        clear_console();
         if input_value == "1" {
             start::main();
         } else if input_value == "2" {
@@ -23,9 +27,10 @@ async fn main() {
             config::main();
         } else if input_value == "4" {
             delete::main();
-        } else if input_value == "0" {
-            return;
+        } else {
+            continue;
         }
+        pause();
         clear_console();
     }
 }

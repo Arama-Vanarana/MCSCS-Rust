@@ -1,6 +1,5 @@
 use std::io::{self, Write};
 
-use console::Term;
 use log::{debug, error};
 use serde_json::Value;
 
@@ -22,7 +21,7 @@ pub fn input() -> String {
 }
 
 #[doc = "返回用户选择的服务器"]
-pub fn choose_server(description: &str) -> Value {
+pub(crate) fn choose_server(description: &str) -> Value {
     let server_configs = load_servers_lists();
 
     loop {
@@ -43,7 +42,7 @@ pub fn choose_server(description: &str) -> Value {
         let input_value = input();
         match input_value.parse::<usize>() {
             Ok(value) => {
-                if value > index {
+                if value >= index {
                     println!("输入错误,请重新输入!");
                     continue;
                 }
@@ -62,6 +61,16 @@ pub fn choose_server(description: &str) -> Value {
 
 #[doc = "清空控制台"]
 pub fn clear_console() {
-    let term = Term::stdout();
-    term.clear_screen().expect("Failed to clear screen");
+    if let Err(e) = console::Term::stdout().clear_screen() {
+        error!("{e}");
+    }
+}
+
+#[doc = "按任意键继续"]
+pub fn pause() {
+    print!("请按任意键继续...");
+    let _ = io::stdout().flush();
+    if let Err(e) = console::Term::stdout().read_key() {
+        error!("{e}");
+    }
 }
