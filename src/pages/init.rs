@@ -22,6 +22,7 @@ lazy_static! {
     static ref INITIALIZED: Mutex<bool> = Mutex::new(false);
 }
 
+/// 初始化页面
 pub async fn main() -> Result<(), Box<dyn Error>> {
     let mut initialized = INITIALIZED.lock().await;
     if !*initialized {
@@ -51,6 +52,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     }
 }
 
+/// 初始化日志
 fn init_log(log_path: &Path) {
     // 文件输出
     let file = FileAppender::builder()
@@ -74,6 +76,7 @@ fn init_log(log_path: &Path) {
     log4rs::init_config(config).expect("log4rs初始化失败");
 }
 
+// 初始化aria2c
 async fn init_aria2(current_dir: &Path, log_path: &Path) {
     match aria2c::call_aria2c_rpc("aria2.getVersion", json!([]), "check").await {
         Ok(version) => {
@@ -113,20 +116,22 @@ async fn init_aria2(current_dir: &Path, log_path: &Path) {
     }
 }
 
+/// 初始化服务器页面相关文件夹和文件
 fn init_servers(current_dir: &Path) {
-    let servers_current_dir = current_dir.join("servers");
-    fs::create_dir_all(&servers_current_dir).expect("创建MCSCS/servers文件夹失败");
-    match fs::metadata(servers_current_dir.join("java.json")) {
+    let configs_current_dir = current_dir.join("configs");
+    fs::create_dir_all(current_dir.join("servers")).expect("创建MCSCS/servers文件夹失败");
+    fs::create_dir_all(&configs_current_dir).expect("创建MCSCS/configs文件夹失败");
+    match fs::metadata(configs_current_dir.join("java.json")) {
         Ok(_) => info!("MCSCS/servers/java.json存在"),
         Err(_) => save_java_lists(&detect_java()),
     }
-    match fs::metadata(servers_current_dir.join("config.json")) {
-        Ok(_) => info!("MCSCS/servers/config.json存在"),
+    match fs::metadata(configs_current_dir.join("servers.json")) {
+        Ok(_) => info!("MCSCS/configs/servers.json存在"),
         Err(_) => {
-            let file = fs::File::create(servers_current_dir.join("config.json"))
-                .expect("创建servers/config.json错误");
-            serde_json::to_writer_pretty(file, &json!({"data": {}}))
-                .expect("MCSCS/servers/config.json错误");
+            let file = fs::File::create(configs_current_dir.join("servers.json"))
+                .expect("创建MCSCS/configs/servers.json错误");
+            serde_json::to_writer_pretty(file, &json!({}))
+                .expect("写入MCSCS/configs/servers.json错误");
         }
     }
 }

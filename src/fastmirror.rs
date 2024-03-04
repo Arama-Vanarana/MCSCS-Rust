@@ -9,7 +9,7 @@ use log::{debug, error};
 use serde_json::{json, Map, Value};
 use sha1::{Digest, Sha1};
 
-use crate::aria2c;
+use crate::aria2c::download;
 
 async fn get_api_value(url: &str) -> Value {
     let response = reqwest::get(url).await.expect("FastMirror请求失败");
@@ -25,7 +25,7 @@ async fn get_api_value(url: &str) -> Value {
 /// let fastmirror = get_fastmirror_value();
 /// ```
 ///
-/// # 返回: serde_json::Value
+/// # 返回
 /// ```JSON
 /// // 类似:
 /// {
@@ -69,7 +69,7 @@ pub async fn get_fastmirror_value() -> Value {
 /// let fastmirror = get_fastmirror_builds_value("Mohist", "1.20.1");
 /// ```
 ///
-/// # 返回: serde_json::Value
+/// # 返回
 /// ```Json
 /// {
 ///     "build593": {
@@ -108,14 +108,6 @@ pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
 }
 
 /// 获取文件的SHA1值
-///
-/// # 使用
-/// ```
-/// let sha1 = get_file_sha1(&std::path::PathBuf::from("C:\\path\\mcscs-for-rust\\MCSCS\\downloads\\Mohist-1.20.1-build593.jar"));
-/// ```
-///
-/// # 返回
-/// `bab89293e4aad011852e152d7a7838197fb46bca`
 pub fn get_file_sha1(file_path: &Path) -> String {
     let mut buffer = [0u8; 1024];
     let mut file = fs::File::open(file_path).expect("无法打开文件");
@@ -142,7 +134,7 @@ pub async fn download_server_core(
     mc_version: &str,
     build_version: &str,
 ) -> Result<PathBuf, Box<dyn Error>> {
-    let file_path = aria2c::download(&format!(
+    let file_path = download(&format!(
         "https://download.fastmirror.net/download/{core}/{mc_version}/{build_version}"
     ))
     .await

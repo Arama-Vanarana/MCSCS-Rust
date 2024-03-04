@@ -9,6 +9,7 @@ use crate::{
     server::save_servers_lists,
 };
 
+/// 配置服务器页面
 pub fn main() {
     let mut server = choose_server("需要配置");
     if server.is_null() {
@@ -26,15 +27,15 @@ pub fn main() {
         print!("请选择一个选项: ");
         let input_value = input();
         if input_value == "1" {
-            println!("1GB = 1000MB");
-            println!("1MB = 1000KB");
-            println!("1KB = 1000Bytes");
+            println!("1GiB = 1024MB, 1GB = 1000MB");
+            println!("1MiB = 1024KB, 1MB = 1000KB");
+            println!("1KiB = 1024Bytes, 1KB = 1000Bytes");
             server["Xms"] = json!(xms(Some(server["Xmx"].as_u64().unwrap())));
             save_servers_lists(server_name, Some(&server));
         } else if input_value == "2" {
-            println!("1GB = 1000MB");
-            println!("1MB = 1000KB");
-            println!("1KB = 1000Bytes");
+            println!("1GiB = 1024MB, 1GB = 1000MB");
+            println!("1MiB = 1024KB, 1MB = 1000KB");
+            println!("1KiB = 1024Bytes, 1KB = 1000Bytes");
             server["Xmx"] = json!(xmx(server["Xms"].as_u64().unwrap()));
             save_servers_lists(server_name, Some(&server));
         } else if input_value == "3" {

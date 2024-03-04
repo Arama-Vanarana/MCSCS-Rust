@@ -27,11 +27,6 @@ pub fn input() -> String {
 }
 
 /// 返回用户选择的服务器配置
-/// 
-/// # 使用
-/// ```
-/// let server = choose_server("测试");
-/// ```
 pub(crate) fn choose_server(description: &str) -> Value {
     let server_configs = load_servers_lists();
 
@@ -71,11 +66,6 @@ pub(crate) fn choose_server(description: &str) -> Value {
 }
 
 /// 清空控制台, 类似在cmd执行cls命令
-/// 
-/// # 使用
-/// ```
-/// clear_console();
-/// ```
 pub fn clear_console() {
     if let Err(e) = console::Term::stdout().clear_screen() {
         error!("{e}");
@@ -83,11 +73,6 @@ pub fn clear_console() {
 }
 
 /// 暂停程序, 类似在cmd执行pause命令
-/// 
-/// # 使用
-/// ```
-/// pause();
-/// ```
 pub fn pause() {
     print!("请按任意键继续...");
     let _ = io::stdout().flush();

@@ -48,21 +48,19 @@ pub async fn call_aria2c_rpc(method: &str, params: Value, id: &str) -> Result<Va
     }
 }
 
+/// 将Bytes单位转换为对应的单位, 例如: 1000000000 -> 1G
 fn format_size(size: u64) -> String {
-    let units = ["B", "KB", "MB", "GB", "TB"];
+    let units = ["Bytes", "KiB", "MiB", "GiB", "TiB"];
     let mut index = 0;
     let mut size = size as f64;
-    while size >= 1000.0 && index < units.len() - 1 {
-        size /= 1000.0;
+    while size >= 1024.0 && index < units.len() - 1 {
+        size /= 1024.0;
         index += 1;
     }
     format!("{:.2}{}", size, units[index])
 }
 
-/// # 使用
-/// ```
-/// download("https://example.com/file")
-/// ```
+/// 使用aria2c下载文件
 pub async fn download(url: &str) -> Result<String, Box<dyn StdError>> {
     // 调用 aria2.addUri 来添加下载任务，并获取 GID
     let gid_json = call_aria2c_rpc("aria2.addUri", json!([[url]]), "add").await?;

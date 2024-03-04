@@ -11,11 +11,6 @@ use crate::{
 };
 
 /// 返回用户输入的服务器名称
-///
-/// # 使用
-/// ```
-/// let name = name();
-/// ```
 pub fn name() -> String {
     let servers = load_servers_lists();
     loop {
@@ -30,47 +25,30 @@ pub fn name() -> String {
 }
 
 /// 返回用户选择/手动输入的Java环境
-///
-/// # 使用
-/// ```
-/// let java = java();
-/// ```
 pub fn java() -> Value {
     loop {
-        let mut java_info = load_java_lists();
-        let mut java_lens = 0;
-
-        if let Value::Array(array) = &java_info {
-            for (index, item) in array.iter().enumerate() {
-                if let Value::Object(java) = item {
-                    debug!("{}", json!(java));
-                    if let Some(version) = java["version"].as_str() {
-                        if let Some(path) = java["path"].as_str() {
-                            println!("{index}: {version}({path})");
-                        } else {
-                            println!("Path不存在！");
-                        }
-                    } else {
-                        println!("Version不存在！");
-                    }
-                    java_lens += 1;
-                }
-            }
+        let mut javas = load_java_lists();
+        let mut index = 0;
+        for java in javas.as_array().unwrap() {
+            println!(
+                "{index}: {}({})",
+                java["version"].as_str().unwrap_or_default(),
+                java["path"].as_str().unwrap_or_default()
+            );
+            index += 1;
         }
-        println!("{}: 重新检测Java环境", java_lens);
-        println!("{}: 手动输入java.exe路径", java_lens + 1);
-        print!("请选择使用的Java环境: ");
+        println!("{index}: 重新检测Java环境");
+        println!("{}: 手动输入java.exe路径", index + 1);
+        print!("请选择一个Java环境: ");
         let input_value = input();
-        debug!("{input_value}");
         match input_value.parse::<usize>() {
-            Ok(choice) => {
-                debug!("用户选择了{choice}");
-                if choice == java_lens {
+            Ok(input_index) => {
+                if input_index == index {
                     save_java_lists(&detect_java());
                     println!("刷新成功!");
                     continue;
                 }
-                if choice == java_lens + 1 {
+                if input_index == index + 1 {
                     print!("请输入java.exe的路径: ");
                     let java_path = PathBuf::from(input());
                     if let Ok(metadata) = fs::metadata(&java_path) {
@@ -80,38 +58,28 @@ pub fn java() -> Value {
                                 println!("Java无效!");
                                 continue;
                             }
-                            let mut java = json!({"path": java_path, "version": java_ver.unwrap()});
-                            if let Value::Array(ref mut arr) = java_info {
-                                arr.push(java.take());
-                            }
-                            save_java_lists(&java_info);
-                            return java;
+                            return json!({"path": java_path, "version": java_ver.unwrap()});
                         }
                         println!("Java不存在!");
                         continue;
                     }
                 }
-                if choice > java_lens {
+                if input_index > index {
                     println!("输入错误,请重新输入!");
                     continue;
                 }
-                println!("{java_info}, {choice}");
-                return java_info[choice].take();
+                return javas[input_index].take();
             }
             Err(e) => {
                 error!("{e}");
                 println!("输入错误,请重新输入!");
+                continue;
             }
         }
     }
 }
 
 /// 返回用户选择的编码格式
-///
-/// # 使用
-/// ```
-/// let encoding = encoding();
-/// ```
 pub fn encoding() -> String {
     loop {
         println!("0: UTF-8");
@@ -140,7 +108,7 @@ pub fn encoding() -> String {
 ///
 /// # 使用
 /// ```
-/// // 1G = 1000000000B(ytes)
+/// // 1G = 1000000000B
 /// let bytes = to_bytes("1GB");
 /// ```
 fn to_bytes(byte: &str) -> u64 {
@@ -158,15 +126,24 @@ fn to_bytes(byte: &str) -> u64 {
         }
     }
     let mut unit_json = HashMap::new();
-    unit_json.insert("T".to_string(), 1000 * 1000 * 1000 * 1000);
+    unit_json.insert("T".to_string(), 1024 * 1024 * 1024 * 1024);
     unit_json.insert("TB".to_string(), 1000 * 1000 * 1000 * 1000);
-    unit_json.insert("G".to_string(), 1000 * 1000 * 1000);
+    unit_json.insert("TIB".to_string(), 1024 * 1024 * 1024 * 1024);
+
+    unit_json.insert("G".to_string(), 1024 * 1024 * 1024);
     unit_json.insert("GB".to_string(), 1000 * 1000 * 1000);
-    unit_json.insert("M".to_string(), 1000 * 1000);
+    unit_json.insert("GIB".to_string(), 1024 * 1024 * 1024);
+
+    unit_json.insert("M".to_string(), 1024 * 1024);
     unit_json.insert("MB".to_string(), 1000 * 1000);
-    unit_json.insert("K".to_string(), 1000);
+    unit_json.insert("MIB".to_string(), 1024 * 1024);
+
+    unit_json.insert("K".to_string(), 1024);
     unit_json.insert("KB".to_string(), 1000);
+    unit_json.insert("KIB".to_string(), 1024);
+
     unit_json.insert("B".to_string(), 1);
+    unit_json.insert("Bytes".to_string(), 1);
     unit_json.insert("".to_string(), 1);
 
     match num_part.parse::<u64>() {
@@ -198,12 +175,12 @@ pub fn xms(xmx: Option<u64>) -> u64 {
             println!("输入错误,请重新输入!");
             continue;
         }
-        if bytes < to_bytes("1MB") {
-            println!("输入错误,Xms不能小于1MB,请重新输入!");
+        if bytes < to_bytes("1MiB") {
+            println!("输入错误,Xms不能小于1MiB,请重新输入!");
             continue;
         }
         if let Ok(mem) = sys_info::mem_info() {
-            if bytes > mem.total {
+            if bytes > (mem.total * 1024) {
                 println!("输入错误,Xms不能大于系统内存,请重新输入!");
                 continue;
             }
@@ -222,14 +199,6 @@ pub fn xms(xmx: Option<u64>) -> u64 {
 }
 
 /// 返回用户输入的XMX(JVM虚拟机最大堆内存)
-///
-/// # 使用
-/// ```
-/// // 定义XMS
-/// let xms = xms(None);
-/// // 获取XMX
-/// let xmx = xmx(xms);
-/// ```
 pub fn xmx(xms: u64) -> u64 {
     loop {
         print!("请输入Xmx(JVM虚拟机最大堆内存)的大小: ");
@@ -239,12 +208,12 @@ pub fn xmx(xms: u64) -> u64 {
             println!("输入错误,请重新输入!");
             continue;
         }
-        if bytes < to_bytes("1MB") {
-            println!("输入错误,Xmx不能小于1M,请重新输入!");
+        if bytes < to_bytes("1MiB") {
+            println!("输入错误,Xmx不能小于1MiB,请重新输入!");
             continue;
         }
         if let Ok(mem) = sys_info::mem_info() {
-            if bytes > mem.total {
+            if bytes > (mem.total * 1024) {
                 println!("输入错误,Xms不能大于系统内存,请重新输入!");
                 continue;
             }
@@ -303,7 +272,7 @@ pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
                     println!("输入错误,请重新输入!");
                     continue;
                 }
-                println!("请输入参数: ");
+                print!("请输入参数: ");
                 let input_arg = input();
                 if input_arg.is_empty() {
                     args.remove(input_index);
@@ -367,7 +336,7 @@ pub fn server_args(server_args: Option<&Value>) -> Value {
                     println!("输入错误,请重新输入!");
                     continue;
                 }
-                println!("请输入参数: ");
+                print!("请输入参数: ");
                 let input_arg = input();
                 if input_arg.is_empty() {
                     args.remove(input_index);
@@ -386,11 +355,6 @@ pub fn server_args(server_args: Option<&Value>) -> Value {
 }
 
 /// 返回用户选择的服务器核心
-///
-/// # 使用
-/// ```
-/// let core = core().await;
-/// ```
 pub async fn core() -> String {
     let fastmirror = get_fastmirror_value().await;
     loop {
@@ -423,12 +387,6 @@ pub async fn core() -> String {
 }
 
 /// 返回用户选择的服务器核心支持的Minecraft版本
-///
-/// # 使用
-/// ```
-/// let core = core().await;
-/// let mc_version = mc_version(&core).await;
-/// ```
 pub async fn mc_version(core: &str) -> String {
     let fastmirror = get_fastmirror_value().await;
     loop {
@@ -464,13 +422,6 @@ pub async fn mc_version(core: &str) -> String {
 }
 
 /// 返回用户选择的构建版本
-///
-/// # 使用
-/// ```
-/// let core = core().await;
-/// let mc_version = mc_version(&core).await;
-/// let build_version = build_version(&core, &mc_version).await;
-/// ```
 pub async fn build_version(core: &str, mc_version: &str) -> String {
     let fastmirror = get_fastmirror_builds_value(core, mc_version).await;
     loop {
@@ -502,6 +453,7 @@ pub async fn build_version(core: &str, mc_version: &str) -> String {
     }
 }
 
+/// 创建服务器页面
 pub async fn main() {
     let mut configs = json!({});
 
@@ -519,9 +471,9 @@ pub async fn main() {
     configs["encoding"] = json!(encoding());
 
     // 设置Xmx和Xms
-    println!("1GB = 1000MB");
-    println!("1MB = 1000KB");
-    println!("1KB = 1000Bytes");
+    println!("1GiB = 1024MB, 1GB = 1000MB");
+    println!("1MiB = 1024KB, 1MB = 1000KB");
+    println!("1KiB = 1024Bytes, 1KB = 1000Bytes");
     let xms = xms(None);
     let xmx = xmx(xms);
     configs["Xms"] = json!(xms);

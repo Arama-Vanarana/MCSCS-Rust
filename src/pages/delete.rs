@@ -3,6 +3,7 @@ use crate::{
     server::save_servers_lists,
 };
 
+/// 删除服务器页面
 pub fn main() {
     let server = choose_server("需要删除");
     if server.is_null() {

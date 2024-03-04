@@ -119,48 +119,38 @@ pub fn detect_java() -> Value {
     java
 }
 
-/// 保存[`detect_java`]函数返回Java环境列表
-/// 
-/// # 使用
-/// ```
-/// save_java_lists(&detect_java());
-/// ```
+/// 保存Java环境列表到[`.\MCSCS\configs\java.json`]
 pub fn save_java_lists(java: &Value) {
     let file = fs::File::create(
         env::current_dir()
             .unwrap()
             .join("MCSCS")
-            .join("servers")
+            .join("configs")
             .clone()
             .join("java.json"),
     )
-    .expect("创建servers/java.json错误");
-    debug!("已保存到MCSCS/servers/java.json: {java}");
-    serde_json::to_writer_pretty(file, &json!({"data": java})).expect("写入servers/java.json错误");
+    .expect("创建configs/java.json错误");
+    debug!("已保存到MCSCS/configs/java.json: {java}");
+    serde_json::to_writer_pretty(file, &json!(java)).expect("写入configs/java.json错误");
 }
 
-/// 获取通过[`save_java_lists`]函数保存到文件的Java环境列表
-/// 
-/// # 使用
-/// ```
-/// let java = load_java_lists();
-/// ```
+/// 从[`.\MCSCS\configs\java.json`]读取Java环境列表
 pub fn load_java_lists() -> Value {
     let mut file = fs::File::open(
         env::current_dir()
             .unwrap()
             .join("MCSCS")
-            .join("servers")
+            .join("configs")
             .join("java.json"),
     )
-    .expect("读取MCSCS/servers/java.json失败");
+    .expect("读取MCSCS/configs/java.json失败");
 
     // 读取文件内容到字符串中
     let mut json_data = String::new();
     file.read_to_string(&mut json_data)
-        .expect("读取MCSCS/servers/java.json失败");
+        .expect("读取MCSCS/configs/java.json失败");
 
     let java = serde_json::from_str::<Value>(&json_data).expect("无法解析JSON");
-    debug!("从MCSCS/servers/java.json加载到的Java环境: {java}");
-    java["data"].clone()
+    debug!("从MCSCS/configs/java.json加载到的Java环境: {java}");
+    java
 }

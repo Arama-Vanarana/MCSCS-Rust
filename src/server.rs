@@ -3,23 +3,24 @@ use std::{env, fs, io::Read};
 use log::debug;
 use serde_json::{json, Value};
 
-/// 保存或删除指定服务器的配置
+/// 保存服务器配置到[`.\MCSCS\configs\servers.json`]
 ///
 /// # 使用
+/// * 修改(如果服务器不存在就会创建)
 /// ```
-/// // 修改
 /// let mut server = load_servers_lists()["name"].take(); // 获取已经保存的配置
 /// server["Xms"] = 100000000
 /// save_servers_lists("name", Some(&server));
-///
-/// // 删除
+/// ```
+/// * 删除
+/// ```
 /// save_servers_lists("name", None);
 /// ```
 pub fn save_servers_lists(server: &str, config: Option<&Value>) {
     let mut data = load_servers_lists();
-    let current_dir = env::current_dir().unwrap().join("MCSCS").join("servers");
-    let file = fs::File::create(current_dir.clone().join("config.json"))
-        .expect("创建MCSCS/servers/config.json失败");
+    let current_dir = env::current_dir().unwrap().join("MCSCS").join("configs");
+    let file = fs::File::create(current_dir.clone().join("servers.json"))
+        .expect("创建MCSCS/configs/servers.json失败");
     let server_config = data[server].take();
 
     match config {
@@ -34,30 +35,26 @@ pub fn save_servers_lists(server: &str, config: Option<&Value>) {
             }
         }
     };
-    serde_json::to_writer_pretty(file, &json!({"data": data}))
-        .expect("写入MCSCS/servers/config.json错误");
+    serde_json::to_writer_pretty(file, &json!(data))
+        .expect("写入MCSCS/configs/servers.json错误");
 }
 
-/// 获取已经保存的所有服务器配置
-/// # 使用
-/// ```
-/// let server = load_servers_lists();
-/// ```
+/// 从[`.\MCSCS\configs\servers.json`]读取所有服务器配置
 pub fn load_servers_lists() -> Value {
     let mut file = fs::File::open(
         env::current_dir()
             .unwrap()
             .join("MCSCS")
-            .join("servers")
-            .join("config.json"),
+            .join("configs")
+            .join("servers.json"),
     )
-    .expect("读取MCSCS/servers/config.json失败");
+    .expect("读取MCSCS/configs/servers.json失败");
 
     // 读取文件内容到字符串中
     let mut json_data = String::new();
     file.read_to_string(&mut json_data)
-        .expect("读取MCSCS/servers/config.json失败");
-    let data = serde_json::from_str::<Value>(&json_data).expect("无法解析 JSON")["data"].take();
-    debug!("从MCSCS/servers/config.json加载到的服务器配置: {data}");
+        .expect("读取MCSCS/configs/servers.json失败");
+    let data = serde_json::from_str::<Value>(&json_data).expect("无法解析 JSON");
+    debug!("从MCSCS/configs/servers.json加载到的服务器配置: {data}");
     data
 }
