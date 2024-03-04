@@ -35,8 +35,7 @@ pub fn save_servers_lists(server: &str, config: Option<&Value>) {
             }
         }
     };
-    serde_json::to_writer_pretty(file, &json!(data))
-        .expect("写入MCSCS/configs/servers.json错误");
+    serde_json::to_writer_pretty(file, &json!(data)).expect("写入MCSCS/configs/servers.json错误");
 }
 
 /// 从[`.\MCSCS\configs\servers.json`]读取所有服务器配置

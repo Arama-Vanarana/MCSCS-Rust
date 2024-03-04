@@ -55,7 +55,7 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
 }
 
 /// 获取Java的版本
-/// 
+///
 /// # 使用
 /// ```
 /// let version = get_java_version(&PathBuf::from("JavaPath"));
@@ -81,13 +81,13 @@ pub fn get_java_version(java_path: &Path) -> Result<String, Box<dyn Error>> {
 }
 
 /// 获取计算机所有安装的Java
-/// 
+///
 /// # 使用
 /// ```
 /// let java = detect_java();
 /// ```
-/// 
-/// # 返回: serde_json::Value
+///
+/// # 返回
 /// ```JSON
 /// {
 ///     "path": "C:\\Users\\Arama\\scoop\\apps\\dragonwell17-jdk\\17.0.9.0.10-17.0.9\\bin\\java.exe",
