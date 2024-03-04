@@ -1,4 +1,4 @@
-use std::{error::Error, fs, io::Read};
+use std::{error::Error, fs, io::Read, path::{Path, PathBuf}};
 
 use log::{debug, error};
 use serde_json::{json, Map, Value};
@@ -50,7 +50,7 @@ pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
     json!(name_map)
 }
 
-pub fn get_file_sha1(file_path: &str) -> String {
+pub fn get_file_sha1(file_path: &Path) -> String {
     let mut buffer = [0u8; 1024];
     let mut file = fs::File::open(file_path).expect("无法打开文件");
     let mut hasher = Sha1::new();
@@ -70,8 +70,8 @@ pub async fn download_fastmirror_core(
     core: &str,
     mc_version: &str,
     build_version: &str,
-) -> Result<String, Box<dyn Error>> {
-    let file_path = aria2c::download(format!(
+) -> Result<PathBuf, Box<dyn Error>> {
+    let file_path = aria2c::download(&format!(
         "https://download.fastmirror.net/download/{core}/{mc_version}/{build_version}"
     ))
     .await
@@ -81,10 +81,10 @@ pub async fn download_fastmirror_core(
         .as_str()
         .unwrap()
         .to_owned();
-    let file_sha1 = get_file_sha1(&file_path);
+    let file_sha1 = get_file_sha1(&PathBuf::from(&file_path));
     if file_sha1 != fastmirror_sha1 {
         error!("SHA1比对失败!FastMirror返回: {fastmirror_sha1}, 但此文件的SHA1为{file_sha1}");
         return Err("SHA1比对失败!".into());
     }
-    Ok(file_path)
+    Ok(PathBuf::from(file_path))
 }
