@@ -1,6 +1,30 @@
-use std::{env, os::windows::process::CommandExt, process::Command};
+use std::{env, fs, os::windows::process::CommandExt, path::Path, process::Command};
 
-use super::choose_server;
+use crate::pages::{choose_server, input};
+
+pub fn eula(path: &Path) {
+    if fs::metadata(path.join("eula.txt")).is_err() {
+        loop {
+            print!("你是否同意Minecraft EULA(https://aka.ms/MinecraftEULA)?(Y/N) ");
+            let input_value = input().to_lowercase();
+            if input_value == "y" || input_value == "yes" {
+                let time = chrono::Local::now().format("%a %b %d %H:%M:%S %Z %Y");
+                let contents = format!("# Create By Minecraft Server Config Script\n# By changing the setting below to TRUE you are indicating your agreement to Minecraft EULA(https://aka.ms/MinecraftEULA).\n# {time}\neula=true");
+                match fs::write(path.join("eula.txt"), contents) {
+                    Ok(_) => break,
+                    Err(e) => {
+                        println!("写入eula.txt失败: {}", e);
+                        return;
+                    }
+                }
+            }
+            if input_value == "n" || input_value == "no" {
+                return;
+            }
+            println!("输入错误,请重新输入!");
+        }
+    }
+}
 
 pub fn main() {
     let mut server = choose_server("需要启动");
@@ -10,14 +34,14 @@ pub fn main() {
     }
     let mut process = Command::new("cmd.exe");
     let name = server["name"].as_str().unwrap();
+    let current_dir = env::current_dir()
+        .unwrap()
+        .join("MCSCS")
+        .join("servers")
+        .join(name);
+    eula(&current_dir);
     // 执行目录
-    process.current_dir(
-        env::current_dir()
-            .unwrap()
-            .join("MCSCS")
-            .join("servers")
-            .join(name),
-    );
+    process.current_dir(current_dir);
     process.arg("/C"); // 服务器关闭后自动退出
     process.arg("start"); // 启动新窗口
     process.raw_arg(format!("\"{name}\"")); // 标题
@@ -35,6 +59,9 @@ pub fn main() {
     ));
     process.arg("-jar"); // 使用Jar
     process.arg("server.jar"); // Jar路径
-    process.arg("nogui"); // 禁用GUI
+    for arg in server["server_args"].as_array_mut().unwrap() {
+        // 在配置文件设置的服务器参数
+        process.arg(arg.as_str().unwrap());
+    }
     process.spawn().expect("服务器启动失败");
 }
