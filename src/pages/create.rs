@@ -10,7 +10,7 @@ use crate::{
     server::{load_servers_lists, save_servers_lists},
 };
 
-fn name() -> String {
+pub fn name() -> String {
     let servers = load_servers_lists();
     loop {
         print!("请输入该服务器的名称: ");
@@ -64,11 +64,11 @@ pub fn java() -> Value {
                     if let Ok(metadata) = fs::metadata(&java_path) {
                         if metadata.is_file() {
                             let java_ver = get_java_version(&java_path.display().to_string());
-                            if java_ver == *"unknown" {
+                            if java_ver.is_err() {
                                 println!("Java无效!");
                                 continue;
                             }
-                            let mut java = json!({"path": java_path.display().to_string(),"version": java_ver});
+                            let mut java = json!({"path": java_path.display().to_string(),"version": java_ver.unwrap()});
                             if let Value::Array(ref mut arr) = java_info {
                                 arr.push(java.take());
                             }
@@ -133,6 +133,8 @@ fn to_bytes(byte: &str) -> u64 {
         }
     }
     let mut unit_json = HashMap::new();
+    unit_json.insert("T".to_string(), 1000 * 1000 * 1000 * 1000);
+    unit_json.insert("TB".to_string(), 1000 * 1000 * 1000 * 1000);
     unit_json.insert("G".to_string(), 1000 * 1000 * 1000);
     unit_json.insert("GB".to_string(), 1000 * 1000 * 1000);
     unit_json.insert("M".to_string(), 1000 * 1000);
@@ -142,12 +144,8 @@ fn to_bytes(byte: &str) -> u64 {
     unit_json.insert("B".to_string(), 1);
     unit_json.insert("".to_string(), 1);
 
-    // Get the conversion factor based on the unit
-    let conversion_factor = *unit_json.get(&unit_part).unwrap_or(&0);
-
-    // Convert the numeric part and multiply by the factor
     match num_part.parse::<u64>() {
-        Ok(num) => num * conversion_factor,
+        Ok(num) => num * (*unit_json.get(&unit_part).unwrap_or(&0)),
         Err(e) => {
             error!("{e}");
             0
@@ -219,7 +217,7 @@ pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
         }
         println!("{index}: 新参数");
         println!("{}: 确认", index + 1);
-        print!("请选择一个选项或要更改的参数(如果为空即为移除参数): ");
+        print!("请选择一个选项或要更改的JVM虚拟机参数(如果为空即为移除参数): ");
         let input_value = input();
         match input_value.parse::<usize>() {
             Ok(input_index) => {
@@ -254,7 +252,59 @@ pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
     }
 }
 
-async fn core() -> String {
+pub fn server_args(server_args: Option<&Value>) -> Value {
+    let mut args = Vec::<Value>::new();
+    if let Some(server_args) = server_args {
+        for arg in server_args.as_array().unwrap() {
+            args.push(arg.clone());
+        }
+    } else {
+        args.push(json!("--nogui"));
+    }
+    loop {
+        let mut index = 0;
+        for arg in args.clone() {
+            println!("{index}: {}", arg.as_str().unwrap());
+            index += 1;
+        }
+        println!("{index}: 新参数");
+        println!("{}: 确认", index + 1);
+        print!("请选择一个选项或要更改的服务器参数(如果为空即为移除参数): ");
+        let input_value = input();
+        match input_value.parse::<usize>() {
+            Ok(input_index) => {
+                if input_index == index {
+                    print!("请输入参数: ");
+                    let input_arg = input();
+                    args.push(json!(input_arg));
+                    continue;
+                }
+                if input_index == index + 1 {
+                    return json!(args);
+                }
+                if input_index > index {
+                    println!("输入错误,请重新输入!");
+                    continue;
+                }
+                println!("请输入参数: ");
+                let input_arg = input();
+                if input_arg.is_empty() {
+                    args.remove(input_index);
+                } else {
+                    args[input_index] = json!(input_arg);
+                }
+                continue;
+            }
+            Err(e) => {
+                error!("{e}");
+                println!("输入错误,请重新输入!");
+                continue;
+            }
+        }
+    }
+}
+
+pub async fn core() -> String {
     let fastmirror = get_fastmirror_value().await;
     loop {
         let mut index = 0;
@@ -285,7 +335,7 @@ async fn core() -> String {
     }
 }
 
-async fn mc_version(core: &str) -> String {
+pub async fn mc_version(core: &str) -> String {
     let fastmirror = get_fastmirror_value().await;
     loop {
         let mut index = 0;
@@ -319,7 +369,7 @@ async fn mc_version(core: &str) -> String {
     }
 }
 
-async fn build_version(core: &str, mc_version: &str) -> String {
+pub async fn build_version(core: &str, mc_version: &str) -> String {
     let fastmirror = get_fastmirror_builds_value(core, mc_version).await;
     loop {
         let mut index = 0;
@@ -389,7 +439,7 @@ pub async fn main() {
             if let Err(e) = fs::create_dir_all(&current_dir) {
                 println!("创建目录失败: {e}");
             }
-            if let Err(e) = fs::copy(PathBuf::from(file_path), current_dir.join("server.jar")) {
+            if let Err(e) = fs::copy(file_path, current_dir.join("server.jar")) {
                 println!("复制核心失败: {e}");
             }
         }
@@ -404,6 +454,9 @@ pub async fn main() {
             "build_version": build_version
         }
     );
+
+    // 服务器参数
+    configs["server_args"] = server_args(None);
 
     save_servers_lists(&name, Some(&configs));
 }

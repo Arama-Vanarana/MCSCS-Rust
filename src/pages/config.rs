@@ -3,7 +3,7 @@ use serde_json::json;
 use crate::{
     pages::{
         choose_server, clear_console,
-        create::{encoding, jvm_args, xms, xmx},
+        create::{encoding, jvm_args, server_args, xms, xmx},
         input,
     },
     server::save_servers_lists,
@@ -21,6 +21,7 @@ pub fn main() {
         println!("2: Xmx: JVM最大堆内存");
         println!("3: encoding: 输入和输出的编码");
         println!("4: JVM args: 其他JVM参数");
+        println!("5: Server args: 服务器参数");
         println!("0: 返回");
         print!("请选择一个选项: ");
         let input_value = input();
@@ -41,6 +42,9 @@ pub fn main() {
             save_servers_lists(server_name, Some(&server));
         } else if input_value == "4" {
             server["jvm_args"] = json!(jvm_args(Some(&server["jvm_args"])));
+            save_servers_lists(server_name, Some(&server));
+        } else if input_value == "5" {
+            server["server_args"] = json!(server_args(Some(&server["server_args"])));
             save_servers_lists(server_name, Some(&server));
         } else {
             if input_value == "0" {
