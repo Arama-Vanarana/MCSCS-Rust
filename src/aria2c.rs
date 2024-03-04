@@ -1,7 +1,7 @@
 use std::{error::Error as StdError, time::Duration};
 
 use indicatif::{ProgressBar, ProgressStyle};
-use log::{error, trace};
+use log::{error, trace, warn};
 use reqwest::{Client, Error as ReqwestError};
 use serde_json::{json, Value};
 use tokio::time::sleep;
@@ -61,22 +61,17 @@ fn format_size(size: u64) -> String {
 }
 
 #[doc = "使用Aria2c下载文件"]
-pub async fn download(url: String) -> Result<String, Box<dyn StdError>> {
+pub async fn download(url: &str) -> Result<String, Box<dyn StdError>> {
     // 调用 aria2.addUri 来添加下载任务，并获取 GID
     let gid_json = call_aria2c_rpc("aria2.addUri", json!([[url]]), "add").await?;
     let gid = gid_json.as_str().unwrap();
     let pb = ProgressBar::new(0);
     pb.set_style(
         ProgressStyle::default_bar()
-            .template("[{bar:50.green}] {msg}")
+            .template("[{bar:.green}] {msg}")
             .unwrap()
             .progress_chars("=> "),
     );
-    let status = call_aria2c_rpc("aria2.tellStatus", json!([gid, ["files"]]), "status").await?;
-    let file_path = status["files"][0]["path"]
-        .as_str()
-        .unwrap()
-        .replace('/', "\\");
     loop {
         let status = call_aria2c_rpc(
             "aria2.tellStatus",
@@ -97,21 +92,17 @@ pub async fn download(url: String) -> Result<String, Box<dyn StdError>> {
         let completed = status["completedLength"]
             .as_str()
             .unwrap_or("0")
-            .parse::<u64>()
-            .unwrap();
+            .parse::<u64>()?;
         let total = status["totalLength"]
             .as_str()
             .unwrap_or("0")
-            .parse::<u64>()
-            .unwrap();
+            .parse::<u64>()?;
         let speed = status["downloadSpeed"]
             .as_str()
             .unwrap_or("0")
-            .parse::<u64>()
-            .unwrap();
+            .parse::<u64>()?;
 
         pb.set_length(total);
-
         pb.set_position(completed);
 
         let mut eta = String::new();
@@ -140,18 +131,25 @@ pub async fn download(url: String) -> Result<String, Box<dyn StdError>> {
             status["connections"]
                 .as_str()
                 .unwrap_or("0")
-                .parse::<u64>()
-                .unwrap()
+                .parse::<u64>()?
         ));
         let download_status = status["status"].as_str().unwrap_or("error");
         if download_status == "complete" {
-            pb.finish_with_message(format!("下载完成: {file_path}"));
-            return Ok(file_path);
+            let file_path =
+                call_aria2c_rpc("aria2.tellStatus", json!([gid, ["files"]]), "file_path").await?
+                    ["files"][0]["path"]
+                    .take();
+            if let Some(file_path) = file_path.as_str() {
+                pb.finish_with_message(format!("下载完成: {file_path}"));
+                return Ok(file_path.to_string());
+            }
+            return Err("下载错误".into());
         }
         if download_status == "error" || download_status == "removed" {
             return Err("下载错误".into());
         }
         if download_status == "paused" {
+            warn!("下载任务被暂停, 正在重新启动...");
             call_aria2c_rpc("aria2.unpause", json!([gid]), "unpause").await?;
         }
         sleep(Duration::from_millis(175)).await;
