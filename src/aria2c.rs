@@ -6,12 +6,11 @@ use reqwest::{Client, Error as ReqwestError};
 use serde_json::{json, Value};
 use tokio::time::sleep;
 
-#[doc = r#"# 使用
-```
-// 获取GID
-call_aria2c_rpc("aria2.addUri", json!([["https://example.com/file.torrent"]]), "1").await;
-```
-"#]
+/// # 使用
+/// ```
+/// //获取GID
+/// call_aria2c_rpc("aria2.addUri", json!([["https://example.com/file.torrent"]]), "1").await;
+/// ```
 pub async fn call_aria2c_rpc(method: &str, params: Value, id: &str) -> Result<Value, ReqwestError> {
     // 合并参数
     let merged_params = {
@@ -60,7 +59,10 @@ fn format_size(size: u64) -> String {
     format!("{:.2}{}", size, units[index])
 }
 
-#[doc = "使用Aria2c下载文件"]
+/// # 使用
+/// ```
+/// download("https://example.com/file")
+/// ```
 pub async fn download(url: &str) -> Result<String, Box<dyn StdError>> {
     // 调用 aria2.addUri 来添加下载任务，并获取 GID
     let gid_json = call_aria2c_rpc("aria2.addUri", json!([[url]]), "add").await?;

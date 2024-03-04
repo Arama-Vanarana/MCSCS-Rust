@@ -56,7 +56,7 @@ mod test_create {
     #[doc = "测试用户选择核心"]
     mod test_download {
         use mcscs::{
-            fastmirror::download_fastmirror_core,
+            fastmirror::download_server_core,
             pages::create::{build_version, core, mc_version},
         };
 
@@ -72,7 +72,7 @@ mod test_create {
             let core = core().await;
             let mc_version = mc_version(&core).await;
             let build_version = build_version(&core, &mc_version).await;
-            match download_fastmirror_core(&core, &mc_version, &build_version).await {
+            match download_server_core(&core, &mc_version, &build_version).await {
                 Ok(file_path) => {
                     println!("下载成功: {}", file_path.display());
                 }

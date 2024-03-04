@@ -2,6 +2,12 @@ use std::{env, fs, os::windows::process::CommandExt, path::Path, process::Comman
 
 use crate::pages::{choose_server, input};
 
+/// 如果path路径参数内没有找到eula.txt(不会寻找子文件夹), 就会要求用户同意EULA协议(https://aka.ms/MinecraftEULA)
+/// 
+/// # 使用
+/// ```
+/// eula(PathBuf::from("path"));
+/// ```
 pub fn eula(path: &Path) {
     if fs::metadata(path.join("eula.txt")).is_err() {
         loop {

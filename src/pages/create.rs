@@ -4,12 +4,18 @@ use log::{debug, error};
 use serde_json::{json, Value};
 
 use crate::{
-    fastmirror::{download_fastmirror_core, get_fastmirror_builds_value, get_fastmirror_value},
+    fastmirror::{download_server_core, get_fastmirror_builds_value, get_fastmirror_value},
     java::{detect_java, get_java_version, load_java_lists, save_java_lists},
     pages::input,
     server::{load_servers_lists, save_servers_lists},
 };
 
+/// 返回用户输入的服务器名称
+///
+/// # 使用
+/// ```
+/// let name = name();
+/// ```
 pub fn name() -> String {
     let servers = load_servers_lists();
     loop {
@@ -23,6 +29,12 @@ pub fn name() -> String {
     }
 }
 
+/// 返回用户选择/手动输入的Java环境
+///
+/// # 使用
+/// ```
+/// let java = java();
+/// ```
 pub fn java() -> Value {
     loop {
         let mut java_info = load_java_lists();
@@ -63,12 +75,12 @@ pub fn java() -> Value {
                     let java_path = PathBuf::from(input());
                     if let Ok(metadata) = fs::metadata(&java_path) {
                         if metadata.is_file() {
-                            let java_ver = get_java_version(&java_path.display().to_string());
+                            let java_ver = get_java_version(&java_path);
                             if java_ver.is_err() {
                                 println!("Java无效!");
                                 continue;
                             }
-                            let mut java = json!({"path": java_path.display().to_string(),"version": java_ver.unwrap()});
+                            let mut java = json!({"path": java_path, "version": java_ver.unwrap()});
                             if let Value::Array(ref mut arr) = java_info {
                                 arr.push(java.take());
                             }
@@ -94,6 +106,12 @@ pub fn java() -> Value {
     }
 }
 
+/// 返回用户选择的编码格式
+///
+/// # 使用
+/// ```
+/// let encoding = encoding();
+/// ```
 pub fn encoding() -> String {
     loop {
         println!("0: UTF-8");
@@ -118,6 +136,13 @@ pub fn encoding() -> String {
     }
 }
 
+/// 将类似1G,1M等等的字节单位转换为Bytes
+///
+/// # 使用
+/// ```
+/// // 1G = 1000000000B(ytes)
+/// let bytes = to_bytes("1GB");
+/// ```
 fn to_bytes(byte: &str) -> u64 {
     let mut num_part = String::new();
     let mut unit_part = String::new();
@@ -153,6 +178,17 @@ fn to_bytes(byte: &str) -> u64 {
     }
 }
 
+/// 返回用户输入的XMS(JVM虚拟机初始堆内存)
+///
+/// # 使用
+/// * 使用场景: 创建服务器
+/// ```
+/// let xms = xms(None);
+/// ```
+/// * 使用场景: 配置服务器, 服务器的XMX为1GB
+/// ```
+/// let xms = xmx(Some(tobytes("1GB")));
+/// ```
 pub fn xms(xmx: Option<u64>) -> u64 {
     loop {
         print!("请输入Xms(JVM虚拟机初始堆内存)的大小: ");
@@ -162,9 +198,15 @@ pub fn xms(xmx: Option<u64>) -> u64 {
             println!("输入错误,请重新输入!");
             continue;
         }
-        if bytes < to_bytes("1M") {
-            println!("输入错误,Xms不能小于1M,请重新输入!");
+        if bytes < to_bytes("1MB") {
+            println!("输入错误,Xms不能小于1MB,请重新输入!");
             continue;
+        }
+        if let Ok(mem) = sys_info::mem_info() {
+            if bytes > mem.total {
+                println!("输入错误,Xms不能大于系统内存,请重新输入!");
+                continue;
+            }
         }
         match xmx {
             Some(xmx) => {
@@ -179,6 +221,15 @@ pub fn xms(xmx: Option<u64>) -> u64 {
     }
 }
 
+/// 返回用户输入的XMX(JVM虚拟机最大堆内存)
+///
+/// # 使用
+/// ```
+/// // 定义XMS
+/// let xms = xms(None);
+/// // 获取XMX
+/// let xmx = xmx(xms);
+/// ```
 pub fn xmx(xms: u64) -> u64 {
     loop {
         print!("请输入Xmx(JVM虚拟机最大堆内存)的大小: ");
@@ -188,9 +239,15 @@ pub fn xmx(xms: u64) -> u64 {
             println!("输入错误,请重新输入!");
             continue;
         }
-        if bytes < to_bytes("1M") {
+        if bytes < to_bytes("1MB") {
             println!("输入错误,Xmx不能小于1M,请重新输入!");
             continue;
+        }
+        if let Ok(mem) = sys_info::mem_info() {
+            if bytes > mem.total {
+                println!("输入错误,Xms不能大于系统内存,请重新输入!");
+                continue;
+            }
         }
         if bytes < xms {
             println!("输入错误,Xmx不能小于Xms,请重新输入!");
@@ -200,6 +257,18 @@ pub fn xmx(xms: u64) -> u64 {
     }
 }
 
+/// 返回用户输入的JVM虚拟机参数
+///
+/// # 使用
+/// * 使用场景: 创建服务器
+/// ```
+/// // 如果是None配置默认会是json!(["-Dlog4j2.formatMsgNoLookups=true"])
+/// let jvm_args = jvm_args(None);
+/// ```
+/// * 使用场景: 配置服务器
+/// ```
+/// let jvm_args = jvm_args(Some(config));
+/// ```
 pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
     let mut args = Vec::<Value>::new();
     if let Some(jvm_args) = jvm_args {
@@ -252,6 +321,18 @@ pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
     }
 }
 
+/// 返回用户输入的服务器参数
+///
+/// # 使用
+/// * 使用场景: 创建服务器
+/// ```
+/// // 如果是None配置默认会是json!(["--nogui"])
+/// let server_args = server_args(None);
+/// ```
+/// * 使用场景: 配置服务器
+/// ```
+/// let server_args = server_args(Some(config));
+/// ```
 pub fn server_args(server_args: Option<&Value>) -> Value {
     let mut args = Vec::<Value>::new();
     if let Some(server_args) = server_args {
@@ -429,7 +510,7 @@ pub async fn main() {
     let core = core().await;
     let mc_version = mc_version(&core).await;
     let build_version = build_version(&core, &mc_version).await;
-    match download_fastmirror_core(&core, &mc_version, &build_version).await {
+    match download_server_core(&core, &mc_version, &build_version).await {
         Ok(file_path) => {
             let current_dir = env::current_dir()
                 .unwrap()

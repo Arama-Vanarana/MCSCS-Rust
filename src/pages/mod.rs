@@ -11,7 +11,13 @@ pub mod delete;
 pub mod init;
 pub mod start;
 
-#[doc = "返回输入的内容"]
+/// 返回输入的内容
+/// 
+/// # 使用
+/// ```
+/// print!("请输入任意内容: ");
+/// let input_value = input();
+/// ```
 pub fn input() -> String {
     io::stdout().flush().expect("无法刷新stdout");
     let mut input = String::new();
@@ -20,7 +26,12 @@ pub fn input() -> String {
     input
 }
 
-#[doc = "返回用户选择的服务器"]
+/// 返回用户选择的服务器配置
+/// 
+/// # 使用
+/// ```
+/// let server = choose_server("测试");
+/// ```
 pub(crate) fn choose_server(description: &str) -> Value {
     let server_configs = load_servers_lists();
 
@@ -59,14 +70,24 @@ pub(crate) fn choose_server(description: &str) -> Value {
     }
 }
 
-#[doc = "清空控制台"]
+/// 清空控制台, 类似在cmd执行cls命令
+/// 
+/// # 使用
+/// ```
+/// clear_console();
+/// ```
 pub fn clear_console() {
     if let Err(e) = console::Term::stdout().clear_screen() {
         error!("{e}");
     }
 }
 
-#[doc = "按任意键继续"]
+/// 暂停程序, 类似在cmd执行pause命令
+/// 
+/// # 使用
+/// ```
+/// pause();
+/// ```
 pub fn pause() {
     print!("请按任意键继续...");
     let _ = io::stdout().flush();

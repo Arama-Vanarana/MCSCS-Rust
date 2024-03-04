@@ -44,19 +44,23 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
                 if file_path.is_dir() && !"Windows".contains(file_name.as_str()) {
                     search_file(&file_path, java_paths);
                 } else if file_name == "java.exe" {
-                    if let Some(java_path) = file_path.to_str() {
-                        let version = get_java_version(java_path);
-                        if let Ok(version) = version {
-                            let mut java_paths = java_paths.lock().unwrap();
-                            java_paths.push(json!({"version": version, "path": java_path}));
-                        }
+                    let version = get_java_version(&file_path);
+                    if let Ok(version) = version {
+                        let mut java_paths = java_paths.lock().unwrap();
+                        java_paths.push(json!({"version": version, "path": file_path}));
                     }
                 }
             });
     }
 }
 
-pub fn get_java_version(java_path: &str) -> Result<String, Box<dyn Error>> {
+/// 获取Java的版本
+/// 
+/// # 使用
+/// ```
+/// let version = get_java_version(&PathBuf::from("JavaPath"));
+/// ```
+pub fn get_java_version(java_path: &Path) -> Result<String, Box<dyn Error>> {
     let output = Command::new(java_path)
         .args(["-version", "2>&1"])
         .output()
@@ -76,6 +80,28 @@ pub fn get_java_version(java_path: &str) -> Result<String, Box<dyn Error>> {
     }
 }
 
+/// 获取计算机所有安装的Java
+/// 
+/// # 使用
+/// ```
+/// let java = detect_java();
+/// ```
+/// 
+/// # 返回: serde_json::Value
+/// ```JSON
+/// {
+///     "path": "C:\\Users\\Arama\\scoop\\apps\\dragonwell17-jdk\\17.0.9.0.10-17.0.9\\bin\\java.exe",
+///     "version": "17.0.9"
+/// },
+/// {
+///     "path": "C:\\Users\\Arama\\scoop\\apps\\zulu8-jdk\\8.76.0.17\\bin\\java.exe",
+///     "version": "1.8.0_402"
+/// },
+/// {
+///     "path": "C:\\Users\\Arama\\scoop\\apps\\zulu8-jdk\\8.76.0.17\\jre\\bin\\java.exe",
+///     "version": "1.8.0_402"
+/// }
+/// ```
 pub fn detect_java() -> Value {
     let java_paths = Arc::new(Mutex::new(Vec::new()));
 
@@ -93,6 +119,12 @@ pub fn detect_java() -> Value {
     java
 }
 
+/// 保存[`detect_java`]函数返回Java环境列表
+/// 
+/// # 使用
+/// ```
+/// save_java_lists(&detect_java());
+/// ```
 pub fn save_java_lists(java: &Value) {
     let file = fs::File::create(
         env::current_dir()
@@ -107,6 +139,12 @@ pub fn save_java_lists(java: &Value) {
     serde_json::to_writer_pretty(file, &json!({"data": java})).expect("写入servers/java.json错误");
 }
 
+/// 获取通过[`save_java_lists`]函数保存到文件的Java环境列表
+/// 
+/// # 使用
+/// ```
+/// let java = load_java_lists();
+/// ```
 pub fn load_java_lists() -> Value {
     let mut file = fs::File::open(
         env::current_dir()

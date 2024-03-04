@@ -1,7 +1,7 @@
 use mcscs::{
     aria2c,
     fastmirror::{
-        download_fastmirror_core, get_fastmirror_builds_value, get_fastmirror_value, get_file_sha1,
+        download_server_core, get_fastmirror_builds_value, get_fastmirror_value, get_file_sha1,
     },
     pages::init,
 };
@@ -38,7 +38,7 @@ async fn test_download_fastmirror_core() {
     let (mc_version, build_version) = get_new_fastmirror_info("Mohist").await;
     println!(
         "{}",
-        download_fastmirror_core("Mohist", &mc_version, &build_version)
+        download_server_core("Mohist", &mc_version, &build_version)
             .await
             .unwrap()
             .display()
@@ -56,7 +56,7 @@ async fn test_check_sha1() {
     let mut fastmirror = get_fastmirror_builds_value("Mohist", &mc_version).await;
     let fastmirror_sha1 = fastmirror[&build_version]["sha1"].take();
     let fastmirror_sha1_str = fastmirror_sha1.as_str().unwrap();
-    let file_path = download_fastmirror_core("Mohist", &mc_version, &build_version)
+    let file_path = download_server_core("Mohist", &mc_version, &build_version)
         .await
         .unwrap();
     let file_sha1 = get_file_sha1(&file_path);

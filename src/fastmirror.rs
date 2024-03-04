@@ -1,4 +1,9 @@
-use std::{error::Error, fs, io::Read, path::{Path, PathBuf}};
+use std::{
+    error::Error,
+    fs,
+    io::Read,
+    path::{Path, PathBuf},
+};
 
 use log::{debug, error};
 use serde_json::{json, Map, Value};
@@ -13,7 +18,34 @@ async fn get_api_value(url: &str) -> Value {
     json
 }
 
-#[doc = "获取FastMirrorAPI的返回值"]
+/// 获取FastMirror的返回值
+///
+/// # 使用
+/// ```
+/// let fastmirror = get_fastmirror_value();
+/// ```
+///
+/// # 返回: serde_json::Value
+/// ```JSON
+/// // 类似:
+/// {
+///     "Mohist": {
+///         "name": "Mohist",
+///         "tag": "mod",
+///         "homepage": "https://mohistmc.com",
+///         "recommend": false,
+///         "mc_versions": [
+///             "1.20.1",
+///             "1.19.4",
+///             "1.19.3",
+///             "1.19.2",
+///             "1.18.2",
+///             "1.16.5",
+///             "1.12.2"
+///         ]
+///     }
+/// }
+/// ```
 pub async fn get_fastmirror_value() -> Value {
     let data = get_api_value("https://download.fastmirror.net/api/v3").await;
 
@@ -30,7 +62,32 @@ pub async fn get_fastmirror_value() -> Value {
     json!(name_map)
 }
 
-#[doc = "获取FastMirrorAPI的build版本返回值"]
+/// 获取FastMirror返回的指定版本的构建版本
+///
+/// # 使用
+/// ```
+/// let fastmirror = get_fastmirror_builds_value("Mohist", "1.20.1");
+/// ```
+///
+/// # 返回: serde_json::Value
+/// ```Json
+/// {
+///     "build593": {
+///         "name": "Mohist",
+///         "mc_version": "1.20.1",
+///         "core_version": "build593",
+///         "update_time": "2024-03-04T06:38:48",
+///         "sha1": "bab89293e4aad011852e152d7a7838197fb46bca"
+///     },
+///     "build592": {
+///         "name": "Mohist",
+///         "mc_version": "1.20.1",
+///         "core_version": "build592",
+///         "update_time": "2024-03-04T04:17:06",
+///         "sha1": "a00807503741f3035bee70ee24f0ad53452f2d6e"
+///     }
+/// }
+/// ```
 pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
     let data = get_api_value(&format!(
         "https://download.fastmirror.net/api/v3/{core}/{version}?offset=0&limit=25"
@@ -50,6 +107,15 @@ pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
     json!(name_map)
 }
 
+/// 获取文件的SHA1值
+///
+/// # 使用
+/// ```
+/// let sha1 = get_file_sha1(&std::path::PathBuf::from("C:\\path\\mcscs-for-rust\\MCSCS\\downloads\\Mohist-1.20.1-build593.jar"));
+/// ```
+///
+/// # 返回
+/// `bab89293e4aad011852e152d7a7838197fb46bca`
 pub fn get_file_sha1(file_path: &Path) -> String {
     let mut buffer = [0u8; 1024];
     let mut file = fs::File::open(file_path).expect("无法打开文件");
@@ -65,8 +131,13 @@ pub fn get_file_sha1(file_path: &Path) -> String {
     hex::encode(hasher.finalize())
 }
 
-#[doc = "下载FastMirrorAPI返回的服务器核心"]
-pub async fn download_fastmirror_core(
+/// 下载服务器核心
+///
+/// # 使用
+/// ```
+/// let path = download_server_core("Mohist", "1.20.1", "build593").expect("下载失败");
+/// ```
+pub async fn download_server_core(
     core: &str,
     mc_version: &str,
     build_version: &str,
