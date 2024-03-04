@@ -1,5 +1,7 @@
 use std::{
-    env, fs,
+    env,
+    error::Error,
+    fs,
     io::Read,
     path::{Path, PathBuf},
     process::Command,
@@ -44,7 +46,7 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
                 } else if file_name == "java.exe" {
                     if let Some(java_path) = file_path.to_str() {
                         let version = get_java_version(java_path);
-                        if version != *"unknown" {
+                        if let Ok(version) = version {
                             let mut java_paths = java_paths.lock().unwrap();
                             java_paths.push(json!({"version": version, "path": java_path}));
                         }
@@ -54,7 +56,7 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
     }
 }
 
-pub fn get_java_version(java_path: &str) -> String {
+pub fn get_java_version(java_path: &str) -> Result<String, Box<dyn Error>> {
     let output = Command::new(java_path)
         .args(["-version", "2>&1"])
         .output()
@@ -65,12 +67,12 @@ pub fn get_java_version(java_path: &str) -> String {
     // 在输出中查找第一个匹配项
     if let Some(captured) = re.captures(&output_str) {
         if let Some(first_match) = captured.get(0) {
-            first_match.as_str().to_string()
+            Ok(first_match.as_str().to_string())
         } else {
-            "unknown".to_string()
+            Err("正则表达式匹配失败".into())
         }
     } else {
-        "unknown".to_string()
+        Err("正则表达式匹配失败".into())
     }
 }
 
