@@ -5,6 +5,9 @@ edition = "2021"
 license = "GPL-3.0"
 authors = ["Arama <3584075812@qq.com>"]
 description = "MCSCS powered by Rust"
+publish = ["crates-io"]
+readme = "README.md"
+repository = "https://gitee.com/Arama-Vanarana/minecraft-server-config-script-for-rust"
 
 [dependencies]
 chrono = "0.4.34"
