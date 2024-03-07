@@ -105,6 +105,7 @@ async fn init_aria2(current_dir: &Path, log_path: &Path) {
                 "--conf-path={}",
                 current_dir.join("aria2c").join("aria2c.conf").display()
             ));
+            aria2c.arg("--quiet=true");
             trace!("shell <- {}", format!("{:?}", aria2c));
             if aria2c.spawn().is_ok() {
                 info!("aria2c启动成功!");
