@@ -1,13 +1,13 @@
 use mcscs::pages::{clear_console, pause};
 
+/// 测试暂停函数
 #[test]
-#[doc = "测试按任意键继续"]
 fn test_pause() {
     pause()
 }
 
+/// 测试清空控制台函数
 #[test]
-#[doc = "测试清空控制台"]
 fn test_clear_console() {
     print!("Test strings.");
     pause();

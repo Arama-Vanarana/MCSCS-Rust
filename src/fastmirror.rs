@@ -5,24 +5,24 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use log::{debug, error};
+use log::error;
+use reqwest::{Client, Url};
 use serde_json::{json, Map, Value};
 use sha1::{Digest, Sha1};
 
 use crate::aria2c::download;
 
-async fn get_api_value(url: &str) -> Value {
-    let response = reqwest::get(url).await.expect("FastMirror请求失败");
-    let json = response.json::<Value>().await.expect("无法解析JSON");
-    debug!("{url} -> {json}");
-    json
-}
-
 /// 获取FastMirror的返回值
 ///
 /// # 使用
 /// ```
-/// let fastmirror = get_fastmirror_value();
+/// use mcscs::fastmirror::get_fastmirror_value;
+///
+/// #[tokio::main]
+/// async fn main() {
+///     let fastmirror = get_fastmirror_value().await;
+///     // ...
+/// }
 /// ```
 ///
 /// # 返回
@@ -47,8 +47,17 @@ async fn get_api_value(url: &str) -> Value {
 /// }
 /// ```
 pub async fn get_fastmirror_value() -> Value {
-    let data = get_api_value("https://download.fastmirror.net/api/v3").await;
-
+    let url = Url::parse("https://download.fastmirror.net/api/v3").expect("get_fastmirror_value()");
+    println!("{url}");
+    let response = Client::new()
+        .get(url.clone())
+        .send()
+        .await
+        .expect("get_fastmirror_value()");
+    let data = response
+        .json::<Value>()
+        .await
+        .expect("get_fastmirror_value()");
     let mut name_map = Map::new();
     if let Some(builds) = data["data"].as_array() {
         for entry in builds {
@@ -66,7 +75,13 @@ pub async fn get_fastmirror_value() -> Value {
 ///
 /// # 使用
 /// ```
-/// let fastmirror = get_fastmirror_builds_value("Mohist", "1.20.1");
+/// use mcscs::fastmirror::get_fastmirror_builds_value;
+///
+/// #[tokio::main]
+/// async fn main() {
+///     let fastmirror = get_fastmirror_builds_value("Mohist", "1.20.1").await;
+///     // ...
+/// }
 /// ```
 ///
 /// # 返回
@@ -89,10 +104,27 @@ pub async fn get_fastmirror_value() -> Value {
 /// }
 /// ```
 pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
-    let data = get_api_value(&format!(
-        "https://download.fastmirror.net/api/v3/{core}/{version}?offset=0&limit=25"
+    let mut url = Url::parse(&format!(
+        "https://download.fastmirror.net/api/v3/{core}/{version}"
     ))
-    .await;
+    .expect("get_fastmirror_builds_value()");
+    url.query_pairs_mut()
+        .append_pair("offset", "0")
+        .append_pair("limit", "25");
+    println!("{url}");
+    let response = Client::new()
+        .get(url)
+        .send()
+        .await
+        .expect("get_fastmirror_builds_value()");
+    let data = response
+        .json::<Value>()
+        .await
+        .expect("get_fastmirror_builds_value()");
+    // let data = get_api_value(&format!(
+    //     "https://download.fastmirror.net/api/v3/{core}/{version}?offset=0&limit=25"
+    // ))
+    // .await;
 
     let mut name_map = Map::new();
     if let Some(builds) = data["data"]["builds"].as_array() {
@@ -127,7 +159,13 @@ pub fn get_file_sha1(file_path: &Path) -> String {
 ///
 /// # 使用
 /// ```
-/// let path = download_server_core("Mohist", "1.20.1", "build593").expect("下载失败");
+/// use mcscs::fastmirror::download_server_core;
+///
+/// #[tokio::main]
+/// async fn main() {
+///     let path = download_server_core("Mohist", "1.20.1", "build593").await.expect("下载失败");
+///     // ...
+/// }
 /// ```
 pub async fn download_server_core(
     core: &str,
@@ -137,7 +175,6 @@ pub async fn download_server_core(
     let file_path = download(&format!(
         "https://download.fastmirror.net/download/{core}/{mc_version}/{build_version}"
     ))
-    .await
     .expect("下载失败");
     let fastmirror_sha1 = get_fastmirror_builds_value(core, mc_version).await[build_version]
         ["sha1"]

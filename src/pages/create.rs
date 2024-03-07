@@ -109,9 +109,10 @@ pub fn encoding() -> String {
 /// # 使用
 /// ```
 /// // 1G = 1000000000B
+/// use mcscs::pages::create::to_bytes;
 /// let bytes = to_bytes("1GB");
 /// ```
-fn to_bytes(byte: &str) -> u64 {
+pub fn to_bytes(byte: &str) -> u64 {
     let mut num_part = String::new();
     let mut unit_part = String::new();
 
@@ -160,11 +161,13 @@ fn to_bytes(byte: &str) -> u64 {
 /// # 使用
 /// * 使用场景: 创建服务器
 /// ```
+/// use mcscs::pages::create::xms;
 /// let xms = xms(None);
 /// ```
 /// * 使用场景: 配置服务器, 服务器的XMX为1GB
 /// ```
-/// let xms = xmx(Some(tobytes("1GB")));
+/// use mcscs::pages::create::{to_bytes, xmx};
+/// let xms = xmx(to_bytes("1GB"));
 /// ```
 pub fn xms(xmx: Option<u64>) -> u64 {
     loop {
@@ -232,11 +235,15 @@ pub fn xmx(xms: u64) -> u64 {
 /// * 使用场景: 创建服务器
 /// ```
 /// // 如果是None配置默认会是json!(["-Dlog4j2.formatMsgNoLookups=true"])
+/// use mcscs::pages::create::jvm_args;
 /// let jvm_args = jvm_args(None);
 /// ```
 /// * 使用场景: 配置服务器
 /// ```
-/// let jvm_args = jvm_args(Some(config));
+/// use serde_json::json;
+/// use mcscs::pages::create::jvm_args;
+/// let config = json!(["JVM虚拟机参数", "..."]);
+/// let jvm_args = jvm_args(Some(&config));
 /// ```
 pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
     let mut args = Vec::<Value>::new();
@@ -296,11 +303,15 @@ pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
 /// * 使用场景: 创建服务器
 /// ```
 /// // 如果是None配置默认会是json!(["--nogui"])
+/// use mcscs::pages::create::server_args;
 /// let server_args = server_args(None);
 /// ```
 /// * 使用场景: 配置服务器
 /// ```
-/// let server_args = server_args(Some(config));
+/// use serde_json::json;
+/// use mcscs::pages::create::server_args;
+/// let config = json!(["服务器参数", "..."]);
+/// let server_args = server_args(Some(&config));
 /// ```
 pub fn server_args(server_args: Option<&Value>) -> Value {
     let mut args = Vec::<Value>::new();

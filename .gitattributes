@@ -1,2 +1,2 @@
-# retain windows line-endings in case checked out on mac or linux
+# 自动转换为LF(\n)
 * text eol=lf

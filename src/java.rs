@@ -8,7 +8,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use log::debug;
+use log::trace;
 use rayon::prelude::*;
 use regex::Regex;
 use serde_json::{json, Value};
@@ -43,7 +43,7 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
 
                 if file_path.is_dir() && !"Windows".contains(file_name.as_str()) {
                     search_file(&file_path, java_paths);
-                } else if file_name == "java.exe" {
+                } else if file_name == "java.exe" || file_name == "java" {
                     let version = get_java_version(&file_path);
                     if let Ok(version) = version {
                         let mut java_paths = java_paths.lock().unwrap();
@@ -58,6 +58,8 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
 ///
 /// # 使用
 /// ```
+/// use std::path::PathBuf;
+/// use mcscs::java::get_java_version;
 /// let version = get_java_version(&PathBuf::from("JavaPath"));
 /// ```
 pub fn get_java_version(java_path: &Path) -> Result<String, Box<dyn Error>> {
@@ -105,17 +107,16 @@ pub fn get_java_version(java_path: &Path) -> Result<String, Box<dyn Error>> {
 pub fn detect_java() -> Value {
     let java_paths = Arc::new(Mutex::new(Vec::new()));
 
-    let drives: Vec<_> = (b'A'..=b'Z')
+    (b'A'..=b'Z')
         .map(|drive| format!("{}:\\", drive as char))
-        .collect();
-
-    drives.into_par_iter().for_each(|drive| {
-        let root_path = PathBuf::from(drive);
-        search_file(&root_path, &java_paths);
-    });
+        .collect::<Vec<String>>()
+        .into_par_iter()
+        .for_each(|drive| {
+            search_file(&PathBuf::from(drive), &java_paths);
+        });
 
     let java = json!(*java_paths.lock().unwrap());
-    // debug!("成功遍历到的Java环境: {java}");
+    // trace!(target: "detect_java", "{java}");
     java
 }
 
@@ -130,7 +131,7 @@ pub fn save_java_lists(java: &Value) {
             .join("java.json"),
     )
     .expect("创建configs/java.json错误");
-    debug!("已保存到MCSCS/configs/java.json: {java}");
+    trace!("MCSCS/configs/java.json <- {java}");
     serde_json::to_writer_pretty(file, &json!(java)).expect("写入configs/java.json错误");
 }
 
@@ -146,11 +147,10 @@ pub fn load_java_lists() -> Value {
     .expect("读取MCSCS/configs/java.json失败");
 
     // 读取文件内容到字符串中
-    let mut json_data = String::new();
-    file.read_to_string(&mut json_data)
+    let mut java = String::new();
+    file.read_to_string(&mut java)
         .expect("读取MCSCS/configs/java.json失败");
-
-    let java = serde_json::from_str::<Value>(&json_data).expect("无法解析JSON");
-    debug!("从MCSCS/configs/java.json加载到的Java环境: {java}");
+    let java = serde_json::from_str::<Value>(&java).expect("无法解析JSON");
+    trace!("MCSCS/configs/java.json -> {java}");
     java
 }

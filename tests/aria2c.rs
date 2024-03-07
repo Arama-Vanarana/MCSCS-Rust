@@ -1,4 +1,5 @@
-use mcscs::{aria2c::call_aria2c_rpc, pages::init};
+use jsonrpc::Client;
+use mcscs::pages::init;
 use serde_json::json;
 
 #[tokio::test]
@@ -7,9 +8,16 @@ async fn test_get_aria2c_version() {
         eprintln!("初始化失败: {err}");
         return;
     }
-    match call_aria2c_rpc("aria2.addUri", json!([["https://speedtest.zju.edu.cn/1000M"]]), "test").await {
+    let client = Client::simple_http("http://127.0.0.1:6800/jsonrpc", None, None)
+        .expect("test_get_aria2c_version()");
+    let args = jsonrpc::arg(json!(["token:MCSCS"]));
+    let request = client.build_request("aria2.getVersion", Some(&args));
+    match Client::send_request(&client, request) {
         Ok(result) => {
-            println!("{}", serde_json::to_string_pretty(&result).unwrap());
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&json!(result.result)).unwrap()
+            );
         }
         Err(e) => {
             println!("{e}");

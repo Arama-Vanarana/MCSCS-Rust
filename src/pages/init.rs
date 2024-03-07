@@ -1,8 +1,9 @@
 use std::{env, error::Error, fs, path::Path, process::Command};
 
 use chrono::Local;
+use jsonrpc::Client;
 use lazy_static::lazy_static;
-use log::{debug, error, info, warn, LevelFilter};
+use log::{error, info, trace, warn, LevelFilter};
 use log4rs::{
     self,
     append::file::FileAppender,
@@ -13,10 +14,7 @@ use log4rs::{
 use serde_json::json;
 use tokio::sync::Mutex;
 
-use crate::{
-    aria2c,
-    java::{detect_java, save_java_lists},
-};
+use crate::java::{detect_java, save_java_lists};
 
 lazy_static! {
     static ref INITIALIZED: Mutex<bool> = Mutex::new(false);
@@ -78,40 +76,41 @@ fn init_log(log_path: &Path) {
 
 // 初始化aria2c
 async fn init_aria2(current_dir: &Path, log_path: &Path) {
-    match aria2c::call_aria2c_rpc("aria2.getVersion", json!([]), "check").await {
+    let client =
+        Client::simple_http("http://127.0.0.1:6800/jsonrpc", None, None).expect("init_aria2()");
+    let args = jsonrpc::arg(json!([]));
+    let request = client.build_request("aria2.getVersion", Some(&args));
+    match Client::send_request(&client, request) {
         Ok(version) => {
             info!(
                 "aria2c已启动: {}",
-                version["version"].as_str().unwrap_or("unknown")
+                json!(version.result)["version"]
+                    .as_str()
+                    .unwrap_or("unknown")
             );
         }
         Err(e) => {
-            if e.is_timeout() {
-                warn!("检测到aria2c似乎未开启,正在开启aria2c中...");
-                fs::create_dir_all(current_dir.join("downloads"))
-                    .expect("创建MCSCS/downloads文件夹失败");
-                let execute = current_dir.join("aria2c").join("aria2c.exe");
-                let args = [
-                    &format!("--dir={}", current_dir.join("downloads").display()),
-                    &format!("--log={}", log_path.join("aria2c.log").display()),
-                    "--enable-rpc=true",
-                    "--rpc-listen-port=6800",
-                    "--rpc-max-request-size=10M",
-                    "--rpc-secret=MCSCS",
-                    &format!(
-                        "--conf-path={}",
-                        current_dir.join("aria2c").join("aria2c.conf").display()
-                    ),
-                ];
-                debug!("aria2c参数: {}", json!(args));
-                Command::new(execute)
-                    .args(args)
-                    .spawn()
-                    .expect("aria2c启动失败!");
+            warn!("检测到aria2c似乎未开启,正在开启aria2c中...");
+            fs::create_dir_all(current_dir.join("downloads"))
+                .expect("创建MCSCS/downloads文件夹失败");
+            let execute = current_dir.join("aria2c").join("aria2c.exe");
+            let mut aria2c = Command::new(execute);
+            aria2c.arg(format!("--dir={}", current_dir.join("downloads").display()));
+            aria2c.arg(format!("--log={}", log_path.join("aria2c.log").display()));
+            aria2c.arg("--enable-rpc=true");
+            aria2c.arg("--rpc-listen-port=6800");
+            aria2c.arg("--rpc-max-request-size=10M");
+            aria2c.arg("--rpc-secret=MCSCS");
+            aria2c.arg(format!(
+                "--conf-path={}",
+                current_dir.join("aria2c").join("aria2c.conf").display()
+            ));
+            trace!("shell <- {}", format!("{:?}", aria2c));
+            if aria2c.spawn().is_ok() {
                 info!("aria2c启动成功!");
-            } else {
-                error!("aria2c开启失败: {e}");
+                return;
             }
+            error!("aria2c开启失败: {e}");
         }
     }
 }

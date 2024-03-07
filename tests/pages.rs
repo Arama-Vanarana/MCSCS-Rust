@@ -116,8 +116,6 @@ fn test_config_pages() {
 #[doc = "测试初始化页面"]
 mod test_init {
     use log::{debug, error, info, trace, warn};
-    use mcscs::aria2c::call_aria2c_rpc;
-    use serde_json::json;
 
     use super::*;
 
@@ -132,17 +130,5 @@ mod test_init {
         info!("this is an info msg.");
         warn!("this is a warn msg.");
         error!("this is an error msg.");
-    }
-
-    #[tokio::test]
-    async fn test_aria2c() {
-        if let Err(err) = init::main().await {
-            eprintln!("初始化失败: {err}");
-            return;
-        }
-        match call_aria2c_rpc("aria2.getVersion", json!([]), "get_version").await {
-            Ok(resp) => println!("{resp}"),
-            Err(err) => eprintln!("{err}"),
-        }
     }
 }

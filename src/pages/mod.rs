@@ -15,6 +15,7 @@ pub mod start;
 ///
 /// # 使用
 /// ```
+/// use mcscs::pages::input;
 /// print!("请输入任意内容: ");
 /// let input_value = input();
 /// ```

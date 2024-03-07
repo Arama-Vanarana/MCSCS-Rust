@@ -3,17 +3,20 @@ use std::{env, fs, io::Read};
 use log::debug;
 use serde_json::{json, Value};
 
-/// 保存服务器配置到[`.\MCSCS\configs\servers.json`]
+/// 保存服务器配置到`MCSCS\configs\servers.json`
 ///
 /// # 使用
 /// * 修改(如果服务器不存在就会创建)
 /// ```
+/// use serde_json::Value;
+/// use mcscs::server::{load_servers_lists, save_servers_lists};
 /// let mut server = load_servers_lists()["name"].take(); // 获取已经保存的配置
-/// server["Xms"] = 100000000
+/// server["Xms"] = Value::from(100000000);
 /// save_servers_lists("name", Some(&server));
 /// ```
 /// * 删除
 /// ```
+/// use mcscs::server::save_servers_lists;
 /// save_servers_lists("name", None);
 /// ```
 pub fn save_servers_lists(server: &str, config: Option<&Value>) {
@@ -38,7 +41,7 @@ pub fn save_servers_lists(server: &str, config: Option<&Value>) {
     serde_json::to_writer_pretty(file, &json!(data)).expect("写入MCSCS/configs/servers.json错误");
 }
 
-/// 从[`.\MCSCS\configs\servers.json`]读取所有服务器配置
+/// 从[`MCSCS\configs\servers.json`读取所有服务器配置
 pub fn load_servers_lists() -> Value {
     let mut file = fs::File::open(
         env::current_dir()

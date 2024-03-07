@@ -10,10 +10,11 @@ readme = "README.md"
 repository = "https://gitee.com/Arama-Vanarana/minecraft-server-config-script-for-rust"
 
 [dependencies]
-chrono = "0.4.34"
+chrono = "0.4.35"
 console = "0.15.8"
 hex = "0.4.3"
 indicatif = "0.17.8"
+jsonrpc = "0.17.0"
 lazy_static = "1.4.0"
 log = "0.4.21"
 log4rs = "1.3.0"
