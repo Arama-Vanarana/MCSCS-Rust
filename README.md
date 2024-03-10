@@ -14,20 +14,24 @@ MCSCS for Rust 是一个用于配置/创建Minecraft服务器的Rust脚本
 .\mcscs.exe
 ```
 
+---
+
 ### 自行编译
+#### 安装环境
 * [下载Rustup](https://www.rust-lang.org/zh-CN/tools/install)
 * [下载Git](https://github.com/git-for-windows/git/releases) 如果无法访问请尝试使用[Steamcommunity-302](https://www.dogfight360.com/blog/686)/[Watt toolkit(Steam++)](https://steampp.net)/任意可科学上网工具重试
 #### 克隆仓库
 * 打开Git Bash
 * 执行以下命令(任意选一)
-```powershell
+```bash
 # gitee(国内用户推荐)
 git clone https://gitee.com/Arama-Vanarana/MCSCS-Rust --depth 0
 ```
-```powershell
+```bash
 # github(国外用户推荐)
 git clone https://github.com/Arama-Vanarana/MCSCS-Rust --depth 0
 ```
+#### 构建程序
 * 等待完成后执行以下命令构建并运行
 ```powershell
 cd MCSCS-Rust
