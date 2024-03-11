@@ -1,6 +1,6 @@
 use std::{env, fs, io::Read};
 
-use log::{debug, trace};
+use log::trace;
 use serde_json::{json, Value};
 
 /// 保存服务器配置到`MCSCS\configs\servers.json`
