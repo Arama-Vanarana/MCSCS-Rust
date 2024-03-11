@@ -1,5 +1,5 @@
 # Minecraft Server Config Script for Rust
-_**Minecraft Server Config Script for Rust, 简称MCSCS for Rust**_<img src="https://www.rust-lang.org/static/images/rust-logo-blk.svg" width="25">
+**Minecraft Server Config Script for Rust, 简称MCSCS for Rust**<img src="https://www.rust-lang.org/static/images/rust-logo-blk.svg" width="20">
 
 ## 介绍
 MCSCS for Rust 是一个用于配置/创建Minecraft服务器的Rust脚本
