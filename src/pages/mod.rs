@@ -8,6 +8,7 @@ use crate::server::load_servers_lists;
 pub mod config;
 pub mod create;
 pub mod delete;
+pub mod import;
 pub mod init;
 pub mod start;
 
@@ -28,8 +29,8 @@ pub fn input() -> String {
 }
 
 /// 返回用户选择的服务器配置
-pub(crate) fn choose_server(description: &str) -> Value {
-    let server_configs = load_servers_lists();
+pub fn choose_server(description: &str) -> Value {
+    let server_configs = load_servers_lists(None);
 
     loop {
         let mut index = 0;

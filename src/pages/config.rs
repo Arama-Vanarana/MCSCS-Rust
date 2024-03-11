@@ -16,7 +16,7 @@ pub fn main() {
         println!("你还没有创建任何一个服务器!");
         return;
     }
-    let server_name = &server["name"].as_str().unwrap().to_string();
+    let server_name = &server["name"].as_str().unwrap_or_default().to_string();
     loop {
         println!("1: Xms: JVM初始堆内存");
         println!("2: Xmx: JVM最大堆内存");
@@ -30,23 +30,23 @@ pub fn main() {
             println!("1GiB = 1024MB, 1GB = 1000MB");
             println!("1MiB = 1024KB, 1MB = 1000KB");
             println!("1KiB = 1024Bytes, 1KB = 1000Bytes");
-            server["Xms"] = json!(xms(Some(server["Xmx"].as_u64().unwrap())));
-            save_servers_lists(server_name, Some(&server));
+            server["Xms"] = json!(xms(Some(server["Xmx"].as_u64().unwrap_or_default())));
+            save_servers_lists(server_name, &server);
         } else if input_value == "2" {
             println!("1GiB = 1024MB, 1GB = 1000MB");
             println!("1MiB = 1024KB, 1MB = 1000KB");
             println!("1KiB = 1024Bytes, 1KB = 1000Bytes");
-            server["Xmx"] = json!(xmx(server["Xms"].as_u64().unwrap()));
-            save_servers_lists(server_name, Some(&server));
+            server["Xmx"] = json!(xmx(server["Xms"].as_u64().unwrap_or_default()));
+            save_servers_lists(server_name, &server);
         } else if input_value == "3" {
             server["encoding"] = json!(encoding());
-            save_servers_lists(server_name, Some(&server));
+            save_servers_lists(server_name, &server);
         } else if input_value == "4" {
             server["jvm_args"] = json!(jvm_args(Some(&server["jvm_args"])));
-            save_servers_lists(server_name, Some(&server));
+            save_servers_lists(server_name, &server);
         } else if input_value == "5" {
             server["server_args"] = json!(server_args(Some(&server["server_args"])));
-            save_servers_lists(server_name, Some(&server));
+            save_servers_lists(server_name, &server);
         } else {
             if input_value == "0" {
                 break;

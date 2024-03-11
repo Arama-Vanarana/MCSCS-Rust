@@ -12,7 +12,7 @@ use crate::{
 
 /// 返回用户输入的服务器名称
 pub fn name() -> String {
-    let servers = load_servers_lists();
+    let servers = load_servers_lists(None);
     loop {
         print!("请输入该服务器的名称: ");
         let name = input();
@@ -29,11 +29,11 @@ pub fn java() -> Value {
     loop {
         let mut javas = load_java_lists();
         let mut index = 0;
-        for java in javas.as_array().unwrap() {
+        for java in javas.as_array().expect("java()") {
             println!(
                 "{index}: {}({})",
-                java["version"].as_str().unwrap_or_default(),
-                java["path"].as_str().unwrap_or_default()
+                java["version"].as_str().expect("java()"),
+                java["path"].as_str().expect("java()")
             );
             index += 1;
         }
@@ -523,5 +523,5 @@ pub async fn main() {
     // 服务器参数
     configs["server_args"] = server_args(None);
 
-    save_servers_lists(&name, Some(&configs));
+    save_servers_lists(&name, &configs);
 }
