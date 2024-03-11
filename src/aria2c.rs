@@ -2,7 +2,7 @@ use std::{error::Error, thread::sleep, time::Duration};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use jsonrpc::Client;
-use log::warn;
+use log::{info, warn};
 use serde_json::json;
 
 /// 将Bytes单位转换为对应的单位, 例如: 1000000000 -> 1G
@@ -14,23 +14,27 @@ fn format_size(size: u64) -> String {
         size /= 1024.0;
         index += 1;
     }
-    format!("{:.2}{}", size, units[index])
+    format!("{size:.2}{}", units[index])
 }
 
 /// 使用aria2c下载文件
+///
+/// # 使用
+/// ```
+/// use mcscs::aria2c::download;
+/// if let Ok(file_path) = download("https://example.com/file.zip") {
+///     // 处理文件路径
+/// }
+/// ```
 pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
     // 调用 aria2.addUri 来添加下载任务，并获取 GID
-    let client = Client::simple_http(
-        "http://127.0.0.1:6800/jsonrpc",
-        None,
-        None,
-    )
-    .expect("download()");
+    let client =
+        Client::simple_http("http://127.0.0.1:6800/jsonrpc", None, None).expect("download()");
     let args = jsonrpc::arg(json!(["token:MCSCS", [url]]));
     let request = client.build_request("aria2.addUri", Some(&args));
     let response = Client::send_request(&client, request);
-    let gid_json = json!(response.unwrap().result);
-    let gid = gid_json.as_str().unwrap();
+    let gid_json = json!(response.expect("download()").result);
+    let gid = gid_json.as_str().unwrap_or_default();
     let pb = ProgressBar::new(0);
     pb.set_style(
         ProgressStyle::default_bar()
@@ -52,7 +56,7 @@ pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
         ]));
         let request = client.build_request("aria2.tellStatus", Some(&args));
         let response = Client::send_request(&client, request).expect("download()");
-        let status = json!(response.result.unwrap());
+        let status = json!(response.result.unwrap_or_default());
         // 获取已完成的大小，总大小，下载速度，剩余时间等信息
         let completed = status["completedLength"]
             .as_str()
@@ -103,7 +107,7 @@ pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
             let args = jsonrpc::arg(json!(["token:MCSCS", gid, ["files"]]));
             let request = client.build_request("aria2.tellStatus", Some(&args));
             let response = Client::send_request(&client, request).expect("download()");
-            let file_path = json!(response.result.unwrap())["files"][0]["path"].take();
+            let file_path = json!(response.result.unwrap_or_default())["files"][0]["path"].take();
             if let Some(file_path) = file_path.as_str() {
                 pb.finish_with_message(format!("下载完成: {file_path}"));
                 return Ok(file_path.to_string());
@@ -117,7 +121,10 @@ pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
             warn!("下载任务被暂停, 正在重新启动...");
             let args = jsonrpc::arg(json!(["token:MCSCS", gid]));
             let request = client.build_request("aria2.unpause", Some(&args));
-            Client::send_request(&client, request).expect("download()");
+            let response = Client::send_request(&client, request).expect("download()");
+            if json!(response.result.unwrap_or_default()) == gid_json {
+                info!("下载任务已重新启动");
+            }
         }
         sleep(Duration::from_millis(175));
     }

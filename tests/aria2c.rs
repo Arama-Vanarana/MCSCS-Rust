@@ -4,10 +4,7 @@ use serde_json::json;
 
 #[tokio::test]
 async fn test_get_aria2c_version() {
-    if let Err(err) = init::main().await {
-        eprintln!("初始化失败: {err}");
-        return;
-    }
+    init::main().await.expect("main()");
     let client = Client::simple_http("http://127.0.0.1:6800/jsonrpc", None, None)
         .expect("test_get_aria2c_version()");
     let args = jsonrpc::arg(json!(["token:MCSCS"]));

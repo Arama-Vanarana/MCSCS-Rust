@@ -121,14 +121,16 @@ mod test_init {
 
     #[tokio::test]
     async fn test_log() {
-        if let Err(err) = init::main().await {
-            eprintln!("初始化失败: {err}");
-            return;
-        }
+    init::main().await.expect("main()");
         trace!("this is a trace msg.");
         debug!("this is a debug msg.");
         info!("this is an info msg.");
         warn!("this is a warn msg.");
         error!("this is an error msg.");
+    }
+
+    #[tokio::test]
+    async fn test_init() {
+        init::main().await.expect("main()");
     }
 }

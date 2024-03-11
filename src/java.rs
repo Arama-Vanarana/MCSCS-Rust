@@ -21,7 +21,7 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
             .for_each(|entry| {
                 let file_path = entry.path();
                 let file_name = match file_path.file_name() {
-                    Some(name) => name.to_string_lossy().into_owned(),
+                    Some(name) => name.to_string_lossy().to_string(),
                     None => return,
                 };
 
@@ -66,19 +66,20 @@ pub fn get_java_version(java_path: &Path) -> Result<String, Box<dyn Error>> {
     let output = Command::new(java_path)
         .args(["-version", "2>&1"])
         .output()
-        .unwrap();
+        .expect("get_java_version()");
+
     let output_str = String::from_utf8_lossy(&output.stderr);
     let re = Regex::new(r"(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:[._](\d+))?(?:-(.+))?")
-        .expect("正则表达式不正确");
+        .expect("get_java_version()");
     // 在输出中查找第一个匹配项
     if let Some(captured) = re.captures(&output_str) {
         if let Some(first_match) = captured.get(0) {
             Ok(first_match.as_str().to_string())
         } else {
-            Err("正则表达式匹配失败".into())
+            Err("regex".into())
         }
     } else {
-        Err("正则表达式匹配失败".into())
+        Err("regex".into())
     }
 }
 
@@ -86,7 +87,10 @@ pub fn get_java_version(java_path: &Path) -> Result<String, Box<dyn Error>> {
 ///
 /// # 使用
 /// ```
-/// let java = detect_java();
+/// use mcscs::java::detect_java;
+/// if let Ok(java) = detect_java() {
+///     // 处理Java
+/// }
 /// ```
 ///
 /// # 返回
@@ -115,27 +119,26 @@ pub fn detect_java() -> Value {
             search_file(&PathBuf::from(drive), &java_paths);
         });
 
-    let java = json!(*java_paths.lock().unwrap());
-    // trace!(target: "detect_java", "{java}");
+    let java = json!(*java_paths.lock().expect("detect_java()"));
     java
 }
 
-/// 保存Java环境列表到[`.\MCSCS\configs\java.json`]
+/// 保存Java环境列表到[`MCSCS\configs\java.json`]
 pub fn save_java_lists(java: &Value) {
     let file = fs::File::create(
         env::current_dir()
-            .unwrap()
+            .expect("save_java_lists()")
             .join("MCSCS")
             .join("configs")
             .clone()
             .join("java.json"),
     )
-    .expect("创建configs/java.json错误");
+    .expect("save_java_lists()");
     trace!("MCSCS/configs/java.json <- {java}");
-    serde_json::to_writer_pretty(file, &json!(java)).expect("写入configs/java.json错误");
+    serde_json::to_writer_pretty(file, &json!(java)).expect("save_java_lists()");
 }
 
-/// 从[`.\MCSCS\configs\java.json`]读取Java环境列表
+/// 从[`MCSCS\configs\java.json`]读取Java环境列表
 pub fn load_java_lists() -> Value {
     let mut file = fs::File::open(
         env::current_dir()
@@ -144,13 +147,12 @@ pub fn load_java_lists() -> Value {
             .join("configs")
             .join("java.json"),
     )
-    .expect("读取MCSCS/configs/java.json失败");
+    .expect("load_java_lists()");
 
     // 读取文件内容到字符串中
     let mut java = String::new();
-    file.read_to_string(&mut java)
-        .expect("读取MCSCS/configs/java.json失败");
-    let java = serde_json::from_str::<Value>(&java).expect("无法解析JSON");
+    file.read_to_string(&mut java).expect("load_java_lists()");
+    let java = serde_json::from_str::<Value>(&java).expect("load_java_lists()");
     trace!("MCSCS/configs/java.json -> {java}");
     java
 }

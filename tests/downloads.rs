@@ -33,10 +33,7 @@ async fn get_new_fastmirror_info(core: &str) -> (String, String) {
 /// 测试下载核心
 #[tokio::test]
 async fn test_download_fastmirror_core() {
-    if let Err(err) = init::main().await {
-        eprintln!("初始化失败: {err}");
-        return;
-    }
+    init::main().await.expect("main()");
     let (mc_version, build_version) = get_new_fastmirror_info("Mohist").await;
     println!(
         "{}",
@@ -50,10 +47,7 @@ async fn test_download_fastmirror_core() {
 /// 测试计算SHA1
 #[tokio::test]
 async fn test_check_sha1() {
-    if let Err(err) = init::main().await {
-        eprintln!("初始化失败: {err}");
-        return;
-    }
+    init::main().await.expect("main()");
     let (mc_version, build_version) = get_new_fastmirror_info("Mohist").await;
     let mut fastmirror = get_fastmirror_builds_value("Mohist", &mc_version).await;
     let fastmirror_sha1 = fastmirror[&build_version]["sha1"].take();
@@ -71,10 +65,7 @@ async fn test_check_sha1() {
 /// 测试下载文件
 #[tokio::test]
 async fn test_download_file() {
-    if let Err(err) = init::main().await {
-        eprintln!("初始化失败: {err}");
-        return;
-    }
+    init::main().await.expect("main()");
     let downloads =
         aria2c::download("https://speed.cloudflare.com/__down?during=download&bytes=104857600");
     let file_path = downloads.unwrap_or_else(|err| {

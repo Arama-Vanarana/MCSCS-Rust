@@ -3,10 +3,7 @@ use mcscs::pages::{config, create, delete, init, start};
 
 #[tokio::main]
 async fn main() {
-    if let Err(err) = init::main().await {
-        eprintln!("初始化失败: {err}");
-        return;
-    }
+    init::main().await.expect("main()");
     loop {
         println!("1: 启动服务器");
         println!("2: 创建服务器");

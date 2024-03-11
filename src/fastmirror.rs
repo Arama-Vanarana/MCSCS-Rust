@@ -50,7 +50,7 @@ pub async fn get_fastmirror_value() -> Value {
     let url = Url::parse("https://download.fastmirror.net/api/v3").expect("get_fastmirror_value()");
     println!("{url}");
     let response = Client::new()
-        .get(url.clone())
+        .get(url)
         .send()
         .await
         .expect("get_fastmirror_value()");
@@ -58,12 +58,11 @@ pub async fn get_fastmirror_value() -> Value {
         .json::<Value>()
         .await
         .expect("get_fastmirror_value()");
+
     let mut name_map = Map::new();
     if let Some(builds) = data["data"].as_array() {
         for entry in builds {
-            // 获取每个对象内的 "name" 字段值
             if let Some(name) = entry["name"].as_str() {
-                // 将 "name" 字段值作为键，对象本身作为值插入到 Map 中
                 name_map.insert(name.to_string(), entry.clone());
             }
         }
@@ -86,6 +85,7 @@ pub async fn get_fastmirror_value() -> Value {
 ///
 /// # 返回
 /// ```Json
+/// // 类似:
 /// {
 ///     "build593": {
 ///         "name": "Mohist",
@@ -121,17 +121,11 @@ pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
         .json::<Value>()
         .await
         .expect("get_fastmirror_builds_value()");
-    // let data = get_api_value(&format!(
-    //     "https://download.fastmirror.net/api/v3/{core}/{version}?offset=0&limit=25"
-    // ))
-    // .await;
 
     let mut name_map = Map::new();
     if let Some(builds) = data["data"]["builds"].as_array() {
         for entry in builds {
-            // 获取每个对象内的 "name" 字段值
             if let Some(name) = entry["core_version"].as_str() {
-                // 将 "name" 字段值作为键，对象本身作为值插入到 Map 中
                 name_map.insert(name.to_string(), entry.clone());
             }
         }
@@ -142,7 +136,7 @@ pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
 /// 获取文件的SHA1值
 pub fn get_file_sha1(file_path: &Path) -> String {
     let mut buffer = [0u8; 1024];
-    let mut file = fs::File::open(file_path).expect("无法打开文件");
+    let mut file = fs::File::open(file_path).expect("get_file_sha1()");
     let mut hasher = Sha1::new();
 
     loop {
@@ -175,16 +169,16 @@ pub async fn download_server_core(
     let file_path = download(&format!(
         "https://download.fastmirror.net/download/{core}/{mc_version}/{build_version}"
     ))
-    .expect("下载失败");
+    .expect("download_server_core()");
     let fastmirror_sha1 = get_fastmirror_builds_value(core, mc_version).await[build_version]
         ["sha1"]
         .as_str()
         .unwrap()
-        .to_owned();
+        .to_string();
     let file_sha1 = get_file_sha1(&PathBuf::from(&file_path));
     if file_sha1 != fastmirror_sha1 {
-        error!("SHA1比对失败!FastMirror返回: {fastmirror_sha1}, 但此文件的SHA1为{file_sha1}");
-        return Err("SHA1比对失败!".into());
+        error!("Fastmirror: {fastmirror_sha1} != File: {file_sha1}");
+        return Err("SHA1".into());
     }
     Ok(PathBuf::from(file_path))
 }

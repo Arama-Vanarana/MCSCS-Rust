@@ -28,5 +28,4 @@ fn main() {
         .expect("启动aria2c失败")
         .wait()
         .expect("等待aria2c退出失败");
-
 }
