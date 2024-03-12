@@ -1,4 +1,4 @@
-use std::{env, fs, os::windows::process::CommandExt, path::Path, process::Command};
+use std::{env, fs, path::Path, process::Command};
 
 use crate::pages::{choose_server, input};
 
@@ -34,7 +34,6 @@ pub fn main() {
         println!("你还没有创建任何一个服务器!");
         return;
     }
-    let mut process = Command::new("cmd.exe");
     let name = server["name"].as_str().unwrap();
     let current_dir = env::current_dir()
         .unwrap()
@@ -42,12 +41,8 @@ pub fn main() {
         .join("servers")
         .join(name);
     eula(&current_dir);
-    // 执行目录
+    let mut process = Command::new(server["java"]["path"].as_str().unwrap());
     process.current_dir(current_dir);
-    process.arg("/C"); // 服务器关闭后自动退出
-    process.arg("start"); // 启动新窗口
-    process.raw_arg(format!("\"{name}\"")); // 标题
-    process.arg(server["java"]["path"].as_str().unwrap()); // java.exe
     for arg in server["jvm_args"].as_array_mut().unwrap() {
         // 在配置文件设置的JVM参数
         process.arg(arg.as_str().unwrap());

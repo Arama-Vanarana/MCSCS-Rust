@@ -48,12 +48,7 @@ use crate::aria2c::download;
 /// ```
 pub async fn get_fastmirror_value() -> Value {
     let url = Url::parse("https://download.fastmirror.net/api/v3").expect("get_fastmirror_value()");
-    println!("{url}");
-    let response = Client::new()
-        .get(url)
-        .send()
-        .await
-        .expect("get_fastmirror_value()");
+    let response = reqwest::get(url).await.expect("get_fastmirror_value()");
     let data = response
         .json::<Value>()
         .await
@@ -111,7 +106,6 @@ pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
     url.query_pairs_mut()
         .append_pair("offset", "0")
         .append_pair("limit", "25");
-    println!("{url}");
     let response = Client::new()
         .get(url)
         .send()
