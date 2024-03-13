@@ -1,7 +1,10 @@
+/*
+ * Copyright (c) 2024 MCSCS-Rust.
+ */
+
 use std::{env, error::Error, fs, path::Path, process::Command, thread::sleep, time::Duration};
 
 use chrono::Local;
-use jsonrpc::Client;
 use lazy_static::lazy_static;
 use log::{error, info, trace, warn, LevelFilter};
 use log4rs::{
@@ -14,7 +17,11 @@ use log4rs::{
 use serde_json::json;
 use tokio::sync::Mutex;
 
-use crate::{aria2c::install_aria2c, java::{detect_java, save_java_lists}};
+use crate::aria2c::call_aria2c_rpc;
+use crate::{
+    aria2c::install_aria2c,
+    java::{detect_java, save_java_lists},
+};
 
 lazy_static! {
     static ref INITIALIZED: Mutex<bool> = Mutex::new(false);
@@ -76,18 +83,12 @@ fn init_log(log_path: &Path) {
 
 // 初始化aria2c
 async fn init_aria2(current_dir: &Path, log_path: &Path) {
-    install_aria2c().await; 
-    let client =
-        Client::simple_http("http://127.0.0.1:6800/jsonrpc", None, None).expect("init_aria2()");
-    let args = jsonrpc::arg(json!([]));
-    let request = client.build_request("aria2.getVersion", Some(&args));
-    match Client::send_request(&client, request) {
+    install_aria2c().await;
+    match call_aria2c_rpc("aria2.getVersion", json!([])) {
         Ok(version) => {
             info!(
                 "aria2c已启动: {}",
-                json!(version.result)["version"]
-                    .as_str()
-                    .unwrap_or("unknown")
+                json!(version)["version"].as_str().unwrap_or("unknown")
             );
         }
         Err(_) => {
@@ -97,7 +98,13 @@ async fn init_aria2(current_dir: &Path, log_path: &Path) {
             #[cfg(target_os = "windows")]
             let mut aria2c = Command::new(current_dir.join("aria2c").join("aria2c.exe"));
             #[cfg(not(any(target_os = "windows")))]
-            let mut aria2c = Command::new("aria2c");
+            let mut aria2c = {
+                let mut aria2c = Command::new(current_dir.join("aria2c").join("aria2c"));
+                if !current_dir.join("aria2c").join("aria2c").exists() {
+                    aria2c = Command::new("aria2c");
+                }
+                aria2c
+            };
             aria2c.arg(format!("--dir={}", current_dir.join("downloads").display()));
             aria2c.arg(format!("--log={}", log_path.join("aria2c.log").display()));
             aria2c.arg("--enable-rpc=true");

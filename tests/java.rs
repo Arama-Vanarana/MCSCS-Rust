@@ -1,14 +1,15 @@
+/*
+ * Copyright (c) 2024 MCSCS-Rust.
+ */
+
+S-Rust.
+* /
+
 use mcscs::{java::detect_java, pages::init};
 
 /// 测试寻找Java环境
-#[test]
-fn test_detect_java() {
-    println!("{}", serde_json::to_string_pretty(&detect_java()).unwrap())
-}
-
-/// 测试寻找Java环境(带日志)
 #[tokio::test]
-async fn test_log_detect_java() {
+async fn test_detect_java() {
     init::main().await.expect("main()");
     println!("{}", serde_json::to_string_pretty(&detect_java()).unwrap())
 }
