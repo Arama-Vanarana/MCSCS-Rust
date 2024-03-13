@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 MCSCS-Rust.
+ * Copyright (c) 2024 Minecraft Server Config Script for Rust.
  */
 
 use std::{env, error::Error, fs, path::Path, process::Command, thread::sleep, time::Duration};

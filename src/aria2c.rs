@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 MCSCS-Rust.
+ * Copyright (c) 2024 Minecraft Server Config Script for Rust.
  */
 
 use std::{error::Error, thread::sleep, time::Duration};
