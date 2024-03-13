@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Minecraft Server Config Script for Rust.
  */
 
-use std::{env, error::Error, fs, path::Path, process::Command, thread::sleep, time::Duration};
+use std::{env, error::Error, fs, path::Path, process::Command, time::Duration};
 
 use chrono::Local;
 use lazy_static::lazy_static;
@@ -16,6 +16,7 @@ use log4rs::{
 };
 use serde_json::json;
 use tokio::sync::Mutex;
+use tokio::time::sleep;
 
 use crate::aria2c::call_aria2c_rpc;
 use crate::{
@@ -129,7 +130,7 @@ sudo apt update
 sudo apt install aria2"
                 );
             }
-            sleep(Duration::from_millis(100));
+            sleep(Duration::from_millis(100)).await;
         }
     }
 }
