@@ -1,1 +1,0 @@
-%~dp0aria2c.exe --dir="%~dp0..\downloads" --conf-path=%~dp0aria2c.conf --enable-rpc=true --rpc-listen-port=6800 --rpc-max-request-size=10M --rpc-user=MCSCS --rpc-passwd=123456 --quiet=false --console-log-level=info

@@ -83,6 +83,7 @@ fn init_log(log_path: &Path) {
 
 // 初始化aria2c
 async fn init_aria2(current_dir: &Path, log_path: &Path) {
+    let aria2c_current_dir = current_dir.join("aria2c");
     install_aria2c().await;
     match call_aria2c_rpc("aria2.getVersion", json!([])) {
         Ok(version) => {
@@ -93,13 +94,16 @@ async fn init_aria2(current_dir: &Path, log_path: &Path) {
         }
         Err(_) => {
             warn!("检测到aria2c似乎未开启,正在开启aria2c中...");
-            fs::create_dir_all(current_dir.join("downloads"))
-                .expect("创建MCSCS/downloads文件夹失败");
+            fs::create_dir_all(current_dir.join("downloads")).expect("init_aria2c()");
+            fs::create_dir_all(&aria2c_current_dir).expect("init_aria2c()");
+            if !aria2c_current_dir.join("aria2c.conf").exists() {
+                fs::write(aria2c_current_dir.join("aria2c.conf"), r#""#).expect("init_aria2c()");
+            }
             #[cfg(target_os = "windows")]
-            let mut aria2c = Command::new(current_dir.join("aria2c").join("aria2c.exe"));
+            let mut aria2c = Command::new(aria2c_current_dir.join("aria2c.exe"));
             #[cfg(not(any(target_os = "windows")))]
             let mut aria2c = {
-                let mut aria2c = Command::new(current_dir.join("aria2c").join("aria2c"));
+                let mut aria2c = Command::new(aria2c_current_dir.join("aria2c"));
                 if !current_dir.join("aria2c").join("aria2c").exists() {
                     aria2c = Command::new("aria2c");
                 }
