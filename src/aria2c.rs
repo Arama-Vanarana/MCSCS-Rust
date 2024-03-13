@@ -1,12 +1,9 @@
-use std::fs::File;
-use std::{env, error::Error, io, thread::sleep, time::Duration};
+use std::{error::Error, thread::sleep, time::Duration};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use jsonrpc::Client;
 use log::{info, warn};
-use reqwest::Url;
-use serde_json::{json, Value};
-use zip::ZipArchive;
+use serde_json::json;
 
 /// 将Bytes单位转换为对应的单位, 例如: 1000000000 -> 1G
 fn format_size(size: u64) -> String {
@@ -133,49 +130,80 @@ pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
     }
 }
 
-async fn get_latest_aria2c_version() -> String {
-    let url = Url::parse("https://api.github.com/repos/aria2/aria2/tags")
-        .expect("get_latest_aria2c_version()");
-    let response = reqwest::get(url)
-        .await
-        .expect("get_latest_aria2c_version()");
-    let data = response
-        .json::<Value>()
-        .await
-        .expect("get_latest_aria2c_version()");
-    data[0]["name"]
-        .as_str()
-        .expect("get_latest_aria2c_version()")
-        .to_string()
-}
-
 #[cfg(target_os = "windows")]
-async fn install_aria2c() {
-    println!("开始下载Aria2c");
-    let url = Url::parse("https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip").expect("install_aria2c()");
-    let response = reqwest::get(url).await.expect("install_aria2c()");
-    if !response.status().is_success() {
-        panic!("install_aria2c()");
-    }
+pub async fn install_aria2c() {
+    use std::{env, fs::{self, File}, io};
+
+    use serde_json::Value;
+    use zip::ZipArchive;
+
     let path = env::current_dir()
         .expect("install_aria2c()")
         .join("MCSCS")
         .join("aria2c");
-    let mut file = File::create(path.join("aria2c.zip")).expect("install_aria2c()");
-    io::copy(
-        &mut response.bytes().await.expect("install_aria2c()").as_ref(),
-        &mut file,
-    )
-    .expect("install_aria2c()");
-    println!("Aria2c下载完成");
-    let mut archive = ZipArchive::new(file).expect("install_aria2c()");
-    for i in 0..archive.len() {
-        let mut file = archive.by_index(i).expect("install_aria2c()");
 
-        let file_name = file.name();
-        let mut extracted_file = File::create(file_name).expect("install_aria2c()");
+    if !path.join("aria2c.exe").exists() {
+        println!("开始下载Aria2c");
+        let url = {
+            let response = reqwest::get("https://api.github.com/repos/aria2/aria2/releases")
+                .await
+                .expect("install_aria2c()");
+            let response = response.json::<Value>().await.expect("install_aria2c()");
+            let mut result = String::new();
+            for data in response[0]["assets"].as_array().expect("install_aria2c()") {
+                let name = data["name"].as_str().expect("install_aria2c()");
+                if name.contains("win") && name.contains("64bit") {
+                    result = data["browser_download_url"]
+                        .as_str()
+                        .expect("install_aria2c()")
+                        .to_string();
+                }
+            }
+            result
+        };
 
-        io::copy(&mut file, &mut extracted_file).expect("install_aria2c()");
+        let response = reqwest::get(url).await.expect("install_aria2c()");
+        if !response.status().is_success() {
+            panic!("install_aria2c()");
+        }
+
+        let mut file = File::create(path.join("aria2c.zip")).expect("install_aria2c()");
+        io::copy(
+            &mut response.bytes().await.expect("install_aria2c()").as_ref(),
+            &mut file,
+        )
+        .expect("install_aria2c()");
+        println!("Aria2c下载完成");
+
+        let file = File::open(path.join("aria2c.zip")).expect("install_aria2c()");
+        let mut archive = ZipArchive::new(file).expect("install_aria2c()");
+
+        for i in 0..archive.len() {
+            let mut file = archive.by_index(i).expect("install_aria2c()");
+            if file.name().ends_with("aria2c.exe") {
+                let mut outfile = File::create(&path.join("aria2c.exe")).expect("install_aria2c()");
+                io::copy(&mut file, &mut outfile).expect("install_aria2c()");
+            }
+        }
+        fs::remove_file(path.join("aria2c.zip")).expect("install_aria2c()");
+        println!("解压完成");
     }
-    println!("解压完成");
+}
+
+#[cfg(not(target_os = "windows"))]
+pub async fn install_aria2c() {
+    use std::process::Command;
+
+    let mut process = Command::new("aria2c");
+    process.arg("-v");
+    let output = process.output();
+    if output.is_err() {
+        panic!(
+            "aria2c未安装, 请安装后再次运行本程序:
+Ubuntu/Debian:
+sudo apt update
+sudo apt install aria2"
+        );
+    }
+
 }

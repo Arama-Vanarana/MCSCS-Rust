@@ -12,7 +12,6 @@ repository = "https://gitee.com/Arama-Vanarana/minecraft-server-config-script-fo
 [dependencies]
 chrono = "0.4.35"
 console = "0.15.8"
-flate2 = "1.0.28"
 hex = "0.4.3"
 indicatif = "0.17.8"
 jsonrpc = "0.17.0"
@@ -26,4 +25,6 @@ serde_json = "1.0.114"
 sha1 = "0.10.6"
 sys-info = "0.9.1"
 tokio = { version = "1.36.0", features = ["full"] }
+
+# [target.'cfg(target_os = "windows")'.dependencies]
 zip = "0.6.6"

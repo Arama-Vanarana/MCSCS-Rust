@@ -84,6 +84,7 @@ pub fn get_java_version(java_path: &Path) -> Result<String, Box<dyn Error>> {
 }
 
 /// 获取计算机所有安装的Java
+/// 个人测试WSL下1秒出结果, Windows下4秒出结果!!!!!
 ///
 /// # 使用
 /// ```
@@ -111,6 +112,7 @@ pub fn get_java_version(java_path: &Path) -> Result<String, Box<dyn Error>> {
 pub fn detect_java() -> Value {
     let java_paths = Arc::new(Mutex::new(Vec::new()));
 
+    #[cfg(target_os = "windows")]
     (b'A'..=b'Z')
         .map(|drive| format!("{}:\\", drive as char))
         .collect::<Vec<String>>()
@@ -118,8 +120,17 @@ pub fn detect_java() -> Value {
         .for_each(|drive| {
             search_file(&PathBuf::from(drive), &java_paths);
         });
+    #[cfg(not(target_os = "windows"))]
+    fs::read_dir("/usr/lib")
+        .expect("detect_java()")
+        .for_each(|entry| {
+            if let Ok(entry) = entry {
+                search_file(&entry.path(), &java_paths);
+            }
+        });
 
     let java = json!(*java_paths.lock().expect("detect_java()"));
+    trace!("find -> {java}");
     java
 }
 

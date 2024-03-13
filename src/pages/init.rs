@@ -1,20 +1,20 @@
-use std::{env, error::Error, fs, path::Path, process::Command};
+use std::{env, error::Error, fs, path::Path, process::Command, thread::sleep, time::Duration};
 
 use chrono::Local;
 use jsonrpc::Client;
 use lazy_static::lazy_static;
-use log::{error, info, LevelFilter, trace, warn};
+use log::{error, info, trace, warn, LevelFilter};
 use log4rs::{
     self,
     append::file::FileAppender,
     config::{Appender, Logger, Root},
-    Config,
     encode::pattern::PatternEncoder,
+    Config,
 };
 use serde_json::json;
 use tokio::sync::Mutex;
 
-use crate::java::{detect_java, save_java_lists};
+use crate::{aria2c::install_aria2c, java::{detect_java, save_java_lists}};
 
 lazy_static! {
     static ref INITIALIZED: Mutex<bool> = Mutex::new(false);
@@ -75,8 +75,8 @@ fn init_log(log_path: &Path) {
 }
 
 // 初始化aria2c
-#[cfg(target_os = "windows")]
 async fn init_aria2(current_dir: &Path, log_path: &Path) {
+    install_aria2c().await; 
     let client =
         Client::simple_http("http://127.0.0.1:6800/jsonrpc", None, None).expect("init_aria2()");
     let args = jsonrpc::arg(json!([]));
@@ -90,12 +90,14 @@ async fn init_aria2(current_dir: &Path, log_path: &Path) {
                     .unwrap_or("unknown")
             );
         }
-        Err(e) => {
+        Err(_) => {
             warn!("检测到aria2c似乎未开启,正在开启aria2c中...");
             fs::create_dir_all(current_dir.join("downloads"))
                 .expect("创建MCSCS/downloads文件夹失败");
-            let execute = current_dir.join("aria2c").join("aria2c.exe");
-            let mut aria2c = Command::new(execute);
+            #[cfg(target_os = "windows")]
+            let mut aria2c = Command::new(current_dir.join("aria2c").join("aria2c.exe"));
+            #[cfg(not(any(target_os = "windows")))]
+            let mut aria2c = Command::new("aria2c");
             aria2c.arg(format!("--dir={}", current_dir.join("downloads").display()));
             aria2c.arg(format!("--log={}", log_path.join("aria2c.log").display()));
             aria2c.arg("--enable-rpc=true");
@@ -108,53 +110,15 @@ async fn init_aria2(current_dir: &Path, log_path: &Path) {
             ));
             aria2c.arg("--quiet=true");
             trace!("shell <- {}", format!("{:?}", aria2c));
-            if aria2c.spawn().is_ok() {
-                info!("aria2c启动成功!");
-                return;
+            if aria2c.spawn().is_err() {
+                panic!(
+                    "aria2c未安装, 请安装后再次运行本程序:
+Ubuntu/Debian: 
+sudo apt update
+sudo apt install aria2"
+                );
             }
-            error!("aria2c开启失败: {e}");
-        }
-    }
-}
-
-#[cfg(not(any(target_os = "windows")))]
-async fn init_aria2(current_dir: &Path, log_path: &Path) {
-    let client =
-        Client::simple_http("http://127.0.0.1:6800/jsonrpc", None, None).expect("init_aria2()");
-    let args = jsonrpc::arg(json!([]));
-    let request = client.build_request("aria2.getVersion", Some(&args));
-    match Client::send_request(&client, request) {
-        Ok(version) => {
-            info!(
-                "aria2c已启动: {}",
-                json!(version.result)["version"]
-                    .as_str()
-                    .unwrap_or("unknown")
-            );
-        }
-        Err(e) => {
-            warn!("检测到aria2c似乎未开启,正在开启aria2c中...");
-            fs::create_dir_all(current_dir.join("downloads"))
-                .expect("创建MCSCS/downloads文件夹失败");
-            let execute = current_dir.join("aria2c").join("aria2c");
-            let mut aria2c = Command::new(execute);
-            aria2c.arg(format!("--dir={}", current_dir.join("downloads").display()));
-            aria2c.arg(format!("--log={}", log_path.join("aria2c.log").display()));
-            aria2c.arg("--enable-rpc=true");
-            aria2c.arg("--rpc-listen-port=6800");
-            aria2c.arg("--rpc-max-request-size=10M");
-            aria2c.arg("--rpc-secret=MCSCS");
-            aria2c.arg(format!(
-                "--conf-path={}",
-                current_dir.join("aria2c").join("aria2c.conf").display()
-            ));
-            aria2c.arg("--quiet=true");
-            trace!("shell <- {}", format!("{:?}", aria2c));
-            if aria2c.spawn().is_ok() {
-                info!("aria2c启动成功!");
-                return;
-            }
-            error!("aria2c开启失败: {e}");
+            sleep(Duration::from_millis(100));
         }
     }
 }

@@ -1,5 +1,5 @@
 use jsonrpc::Client;
-use mcscs::pages::init;
+use mcscs::{aria2c::install_aria2c, pages::init};
 use serde_json::json;
 
 #[tokio::test]
@@ -20,4 +20,9 @@ async fn test_get_aria2c_version() {
             println!("{e}");
         }
     }
+}
+
+#[tokio::test]
+async fn test_install_aria2c() {
+    install_aria2c().await;
 }
