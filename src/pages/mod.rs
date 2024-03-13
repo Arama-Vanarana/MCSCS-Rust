@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 MCSCS-Rust.
+ */
+
 use std::io::{self, Write};
 
 use log::{debug, error};

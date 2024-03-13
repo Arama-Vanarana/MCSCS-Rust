@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 MCSCS-Rust.
+ */
+
 use std::{env, fs};
 
 use crate::pages::{choose_server, input};

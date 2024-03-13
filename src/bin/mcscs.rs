@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 MCSCS-Rust.
+ */
+
 use mcscs::pages::{clear_console, input, pause};
 use mcscs::pages::{config, create, delete, init, start};
 

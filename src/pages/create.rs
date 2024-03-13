@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 MCSCS-Rust.
+ */
+
 use std::{collections::HashMap, env, fs, path::PathBuf};
 
 use log::{debug, error};

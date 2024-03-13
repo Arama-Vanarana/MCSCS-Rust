@@ -2,9 +2,6 @@
  * Copyright (c) 2024 MCSCS-Rust.
  */
 
-S-Rust.
-* /
-
 use mcscs::{java::detect_java, pages::init};
 
 /// 测试寻找Java环境

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 MCSCS-Rust.
+ */
+
 use mcscs::pages::{clear_console, pause};
 
 /// 测试暂停函数

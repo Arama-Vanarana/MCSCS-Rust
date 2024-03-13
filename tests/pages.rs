@@ -1,12 +1,17 @@
+/*
+ * Copyright (c) 2024 MCSCS-Rust.
+ */
+
 use mcscs::pages::{config, delete, init, start};
 
 #[doc = "测试创建服务器"]
 mod test_create {
+    use serde_json::json;
+
     use mcscs::pages::{
         create::{self, java, jvm_args, name, xms, xmx},
         init,
     };
-    use serde_json::json;
 
     #[tokio::test]
     #[doc = "测试创建服务器页面"]
@@ -121,7 +126,7 @@ mod test_init {
 
     #[tokio::test]
     async fn test_log() {
-    init::main().await.expect("main()");
+        init::main().await.expect("main()");
         trace!("this is a trace msg.");
         debug!("this is a debug msg.");
         info!("this is an info msg.");

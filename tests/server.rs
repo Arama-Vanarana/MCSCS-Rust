@@ -1,4 +1,11 @@
-use mcscs::{pages::{choose_server, init}, server::load_servers_lists};
+/*
+ * Copyright (c) 2024 MCSCS-Rust.
+ */
+
+use mcscs::{
+    pages::{choose_server, init},
+    server::load_servers_lists,
+};
 
 #[tokio::test]
 async fn test_get_server_config() {

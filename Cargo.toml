@@ -26,5 +26,5 @@ sha1 = "0.10.6"
 sys-info = "0.9.1"
 tokio = { version = "1.36.0", features = ["full"] }
 
-# [target.'cfg(target_os = "windows")'.dependencies]
+[target.'cfg(target_os = "windows")'.dependencies]
 zip = "0.6.6"
