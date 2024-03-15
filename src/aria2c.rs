@@ -2,18 +2,20 @@
  * Copyright (c) 2024 Minecraft Server Config Script for Rust.
  */
 
-use std::{error::Error, thread::sleep, time::Duration};
+use std::path::PathBuf;
+use std::process::Command;
+use std::{env, error::Error, thread::sleep, time::Duration};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use jsonrpc::Client;
-use log::{info, warn};
+use log::{info, trace, warn};
 use serde_json::{json, Value};
 
 pub fn call_aria2c_rpc(method: &str, params: Value) -> Result<Value, Box<dyn Error>> {
-    let mut token_param = vec![json!("token:MCSCS")];
-    token_param.append(params.clone().as_array_mut().expect("call_aria2c_rpc()"));
+    let mut merge_params = vec![json!("token:MCSCS")];
+    merge_params.append(params.clone().as_array_mut().expect("call_aria2c_rpc()"));
     let client = Client::simple_http("http://127.0.0.1:6800/jsonrpc", None, None)?;
-    let args = jsonrpc::arg(json!(["token:MCSCS", [params]]));
+    let args = jsonrpc::arg(json!(merge_params));
     let request = client.build_request(method, Some(&args));
     let response = Client::send_request(&client, request)?;
     Ok(json!(response.result))
@@ -42,7 +44,7 @@ fn format_size(size: u64) -> String {
 /// ```
 pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
     // 调用 aria2.addUri 来添加下载任务，并获取 GID
-    let gid_json = call_aria2c_rpc("aria2.addUri", json!(url))?;
+    let gid_json = call_aria2c_rpc("aria2.addUri", json!([[url]]))?;
     let gid = gid_json.as_str().unwrap_or_default();
     let pb = ProgressBar::new(0);
     pb.set_style(
@@ -56,17 +58,13 @@ pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
             "aria2.tellStatus",
             json!([
                 gid,
-                json!([
-                    "token:MCSCS",
-                    gid,
-                    [
-                        "completedLength",
-                        "totalLength",
-                        "downloadSpeed",
-                        "connections",
-                        "status",
-                    ]
-                ])
+                [
+                    "completedLength",
+                    "totalLength",
+                    "downloadSpeed",
+                    "connections",
+                    "status",
+                ]
             ]),
         )?;
         // 获取已完成的大小，总大小，下载速度，剩余时间等信息
@@ -116,8 +114,9 @@ pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
         ));
         let download_status = status["status"].as_str().unwrap_or("error");
         if download_status == "complete" {
-            let file_path =
-                call_aria2c_rpc("aria2.tellStatus", json!([]))?["files"][0]["path"].take();
+            let file_path = call_aria2c_rpc("aria2.tellStatus", json!([gid, ["files"]]))?["files"]
+                [0]["path"]
+                .take();
             if let Some(file_path) = file_path.as_str() {
                 pb.finish_with_message(format!("下载完成: {file_path}"));
                 return Ok(file_path.to_string());
@@ -142,19 +141,17 @@ pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
 #[cfg(target_os = "windows")]
 pub async fn install_aria2c() {
     use std::{
-        env,
         fs::{self, File},
         io,
     };
 
     use zip::ZipArchive;
 
-    let path = env::current_dir()
-        .expect("install_aria2c()")
-        .join("MCSCS")
-        .join("aria2c");
-
-    if !path.join("aria2c.exe").exists() {
+    if get_aria2c_execute().is_err() {
+        let path = env::current_dir()
+            .expect("install_aria2c()")
+            .join("MCSCS")
+            .join("aria2c");
         println!("开始下载Aria2c");
         let url = {
             let request = reqwest::Client::new()
@@ -205,12 +202,7 @@ pub async fn install_aria2c() {
 
 #[cfg(not(target_os = "windows"))]
 pub async fn install_aria2c() {
-    use std::process::Command;
-
-    let mut process = Command::new("aria2c");
-    process.arg("-v");
-    let output = process.output();
-    if output.is_err() {
+    if get_aria2c_execute().is_err() {
         panic!(
             "aria2c未安装, 请安装后再次运行本程序:
 Ubuntu/Debian:
@@ -218,4 +210,40 @@ sudo apt update
 sudo apt install aria2"
         );
     }
+}
+
+pub fn get_aria2c_execute() -> Result<PathBuf, Box<dyn Error>> {
+    #[cfg(target_os = "windows")]
+    let execute = "aria2c.exe";
+    #[cfg(not(target_os = "windows"))]
+    let execute = "aria2c";
+
+    // 先检测有没有内置的aria2c
+    let aria2c_path = env::current_dir()
+        .expect("get_aria2c_execute()")
+        .join("MCSCS")
+        .join("aria2c")
+        .join(execute);
+    if aria2c_path.exists() {
+        let mut process = Command::new(&aria2c_path);
+        process.arg("-v");
+        if process.output()?.status.success() {
+            trace!("find -> {}", aria2c_path.display());
+            return Ok(aria2c_path);
+        }
+    }
+
+    // 检测PATH环境变量里有没有
+    if let Ok(path_env) = env::var("PATH") {
+        let paths = env::split_paths(&path_env).collect::<Vec<PathBuf>>();
+        for path in paths {
+            let aria2c_path = path.join(execute);
+            if aria2c_path.exists() {
+                return Ok(aria2c_path);
+            }
+        }
+    }
+
+    // 没找到
+    Err("未找到aria2c可执行文件".into())
 }

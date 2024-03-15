@@ -107,10 +107,5 @@ Cargo.lock
 *.pdb
 
 # ------------------------------------------------------------
-MCSCS/*
-
-# Aria2c
-!MCSCS/aria2c
-MCSCS/aria2c/aria2c.exe
-MCSCS/aria2c/aria2c.zip
-MCSCS/aria2c/aria2c
+# 配置文件
+MCSCS/

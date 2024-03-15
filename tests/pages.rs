@@ -2,10 +2,14 @@
  * Copyright (c) 2024 Minecraft Server Config Script for Rust.
  */
 
+use std::error::Error;
+
 use mcscs::pages::{config, delete, init, start};
 
 #[doc = "测试创建服务器"]
 mod test_create {
+    use std::error::Error;
+
     use serde_json::json;
 
     use mcscs::pages::{
@@ -15,7 +19,7 @@ mod test_create {
 
     #[tokio::test]
     #[doc = "测试创建服务器页面"]
-    async fn test_create_pages() {
+    async fn test_create_pages() -> Result<(), Box<dyn Error>> {
         create::main().await
     }
 
@@ -102,19 +106,19 @@ mod test_create {
 
 #[test]
 #[doc = "测试启动服务器页面"]
-fn test_start_pages() {
+fn test_start_pages() -> Result<(), Box<dyn Error>> {
     start::main()
 }
 
 #[test]
 #[doc = "测试删除服务器页面"]
-fn test_delete_pages() {
+fn test_delete_pages() -> Result<(), Box<dyn Error>> {
     delete::main()
 }
 
 #[test]
 #[doc = "测试配置服务器页面"]
-fn test_config_pages() {
+fn test_config_pages() -> Result<(), Box<dyn Error>> {
     config::main()
 }
 

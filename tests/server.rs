@@ -11,7 +11,7 @@ use mcscs::{
 async fn test_get_server_config() {
     init::main().await.expect("main()");
     let data = load_servers_lists(Some(
-        choose_server("需要获取")["name"]
+        choose_server()["name"]
             .as_str()
             .expect("test_get_server_config()"),
     ));

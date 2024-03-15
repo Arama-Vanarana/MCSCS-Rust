@@ -2,12 +2,13 @@
  * Copyright (c) 2024 Minecraft Server Config Script for Rust.
  */
 
+use std::path::PathBuf;
 use std::{
     env,
     error::Error,
     fs,
     io::Read,
-    path::{Path, PathBuf},
+    path::Path,
     process::Command,
     sync::{Arc, Mutex},
 };
@@ -47,14 +48,20 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
 
                 if file_path.is_dir() && !"Windows".contains(file_name.as_str()) {
                     search_file(&file_path, java_paths);
-                } else if file_name == "java.exe" || file_name == "java" {
-                    let version = get_java_version(&file_path);
-                    if let Ok(version) = version {
-                        let mut java_paths = java_paths.lock().unwrap();
-                        java_paths.push(json!({"version": version, "path": file_path}));
+                } else {
+                    #[cfg(target_os = "windows")]
+                    let execute = "java.exe";
+                    #[cfg(not(target_os = "windows"))]
+                    let execute = "java";
+                    if file_name == execute {
+                        let version = get_java_version(&file_path);
+                        if let Ok(version) = version {
+                            let mut java_paths = java_paths.lock().unwrap();
+                            java_paths.push(json!({"version": version, "path": file_path}));
+                        }
                     }
                 }
-            });
+            })
     }
 }
 

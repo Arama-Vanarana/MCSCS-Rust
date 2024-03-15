@@ -12,6 +12,7 @@ repository = "https://gitee.com/Arama-Vanarana/minecraft-server-config-script-fo
 [dependencies]
 chrono = "0.4.35"
 console = "0.15.8"
+dialoguer = "0.11.0"
 hex = "0.4.3"
 indicatif = "0.17.8"
 jsonrpc = "0.17.0"
