@@ -17,7 +17,6 @@ use sha1::{Digest, Sha1};
 use crate::aria2c::download;
 
 /// 获取FastMirror的返回值
-///
 /// # 使用
 /// ```
 /// use mcscs::fastmirror::get_fastmirror_value;
@@ -106,7 +105,7 @@ pub async fn get_fastmirror_builds_value(core: &str, version: &str) -> Value {
     let mut url = Url::parse(&format!(
         "https://download.fastmirror.net/api/v3/{core}/{version}"
     ))
-        .expect("get_fastmirror_builds_value()");
+    .expect("get_fastmirror_builds_value()");
     url.query_pairs_mut()
         .append_pair("offset", "0")
         .append_pair("limit", "25");
@@ -167,7 +166,7 @@ pub async fn download_server_core(
     let file_path = download(&format!(
         "https://download.fastmirror.net/download/{core}/{mc_version}/{build_version}"
     ))
-        .expect("download_server_core()");
+    .expect("download_server_core()");
     let fastmirror_sha1 = get_fastmirror_builds_value(core, mc_version).await[build_version]
         ["sha1"]
         .as_str()

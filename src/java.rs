@@ -46,13 +46,17 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
                     return;
                 }
 
-                if file_path.is_dir() && !"Windows".contains(file_name.as_str()) {
+                if file_path.is_dir() {
+                    #[cfg(target_os = "windows")]
+                    if "Windows".contains(file_name.as_str()) {
+                        return;
+                    }
                     search_file(&file_path, java_paths);
                 } else {
                     #[cfg(target_os = "windows")]
-                        let execute = "java.exe";
+                    let execute = "java.exe";
                     #[cfg(not(target_os = "windows"))]
-                        let execute = "java";
+                    let execute = "java";
                     if file_name == execute {
                         let version = get_java_version(&file_path);
                         if let Ok(version) = version {
@@ -155,7 +159,7 @@ pub fn save_java_lists(java: &Value) {
             .clone()
             .join("java.json"),
     )
-        .expect("save_java_lists()");
+    .expect("save_java_lists()");
     trace!("MCSCS/configs/java.json <- {java}");
     serde_json::to_writer_pretty(file, &json!(java)).expect("save_java_lists()");
 }
@@ -169,7 +173,7 @@ pub fn load_java_lists() -> Value {
             .join("configs")
             .join("java.json"),
     )
-        .expect("load_java_lists()");
+    .expect("load_java_lists()");
 
     // 读取文件内容到字符串中
     let mut java = String::new();
