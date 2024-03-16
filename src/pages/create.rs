@@ -8,11 +8,11 @@ use std::{collections::HashMap, env, fs};
 use log::error;
 use serde_json::{json, Value};
 
-use crate::pages::{choose, choose_file};
+use crate::select::{select_file, select_option};
+use crate::utils::input;
 use crate::{
     fastmirror::{download_server_core, get_fastmirror_builds_value, get_fastmirror_value},
     java::{detect_java, get_java_version, load_java_lists, save_java_lists},
-    pages::input,
     server::{load_servers_lists, save_servers_lists},
 };
 
@@ -44,7 +44,7 @@ pub fn java() -> Result<Value, Box<dyn Error>> {
         }
         options.push("重新检测Java环境".to_string());
         options.push("手动输入Java可执行程序路径".to_string());
-        let selection = choose("请选择一个Java环境或选项", &options)?;
+        let selection = select_option("请选择一个Java环境或选项", &options)?;
         if selection == options.len() - 2 {
             save_java_lists(&detect_java());
             println!("刷新成功!");
@@ -52,9 +52,9 @@ pub fn java() -> Result<Value, Box<dyn Error>> {
         }
         if selection == options.len() - 1 {
             #[cfg(target_os = "windows")]
-                let java_path = choose_file("java.exe").unwrap();
+            let java_path = choose_file("java.exe").unwrap();
             #[cfg(not(target_os = "windows"))]
-                let java_path = choose_file("请选择一个Java可执行程序").unwrap();
+            let java_path = select_file("请选择一个Java可执行程序").unwrap();
             if let Ok(metadata) = fs::metadata(&java_path) {
                 if metadata.is_file() {
                     let java_ver = get_java_version(&java_path);
@@ -75,7 +75,7 @@ pub fn java() -> Result<Value, Box<dyn Error>> {
 /// 返回用户选择的编码格式
 pub fn encoding() -> String {
     let options = vec!["UTF-8", "GBK", "ANSI", "ASCII"];
-    let selection = choose("请选择需要使用的编码格式", &options).unwrap();
+    let selection = select_option("请选择需要使用的编码格式", &options).unwrap();
     options[selection].to_lowercase()
     // println!("0: UTF-8");
     // println!("1: GBK");
@@ -252,11 +252,11 @@ pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
             .collect::<Vec<&str>>();
         display_args.push("新参数");
         display_args.push("确认");
-        let selection = choose(
+        let selection = select_option(
             "请选择一个选项或要更改的JVM虚拟机参数(如果为空即为移除参数)",
             &display_args,
         )
-            .unwrap();
+        .unwrap();
         if selection == display_args.len() - 2 {
             let input_arg = input("请输入参数");
             args.push(json!(input_arg));
@@ -307,11 +307,11 @@ pub fn server_args(server_args: Option<&Value>) -> Value {
             .collect::<Vec<&str>>();
         display_args.push("新参数");
         display_args.push("确认");
-        let selection = choose(
+        let selection = select_option(
             "请选择一个选项或要更改的服务器参数(如果为空即为移除参数)",
             &display_args,
         )
-            .unwrap();
+        .unwrap();
         if selection == display_args.len() - 2 {
             let input_arg = input("请输入参数");
             args.push(json!(input_arg));
@@ -341,7 +341,7 @@ pub async fn core() -> String {
             cores.push(core);
         }
     }
-    let selection = choose("请选择一个使用的核心", &options).unwrap();
+    let selection = select_option("请选择一个使用的核心", &options).unwrap();
     cores[selection].to_string()
 }
 
@@ -356,7 +356,7 @@ pub async fn mc_version(core: &str) -> String {
             }
         }
     }
-    let selection = choose("请选择一个使用的minecraft版本", &options).unwrap();
+    let selection = select_option("请选择一个使用的minecraft版本", &options).unwrap();
     options[selection].to_string()
 }
 
@@ -371,7 +371,7 @@ pub async fn build_version(core: &str, mc_version: &str) -> String {
             builds.push(build);
         }
     }
-    let selection = choose("请选择一个使用的构建版本", &options).unwrap();
+    let selection = select_option("请选择一个使用的构建版本", &options).unwrap();
     builds[selection].to_string()
 }
 

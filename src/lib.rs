@@ -4,6 +4,7 @@
 pub mod aria2c;
 pub mod fastmirror;
 pub mod java;
-pub mod server;
-
 pub mod pages;
+pub mod select;
+pub mod server;
+pub mod utils;

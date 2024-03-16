@@ -7,12 +7,13 @@ use std::error::Error;
 use serde_json::json;
 
 use crate::pages::create::{encoding, jvm_args, server_args, xms, xmx};
-use crate::pages::{choose, choose_server, clear_console};
+use crate::select::{select_option, select_server};
 use crate::server::save_servers_lists;
+use crate::utils::clear_console;
 
 /// 配置服务器页面
 pub fn main() -> Result<(), Box<dyn Error>> {
-    let mut server = choose_server();
+    let mut server = select_server();
     if server.is_null() {
         println!("你还没有创建任何一个服务器!");
         return Ok(());
@@ -28,7 +29,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         "返回",
     ];
     loop {
-        let selection = choose("请选择一个选项", &options)?;
+        let selection = select_option("请选择一个选项", &options)?;
         if selection == options.len() - 1 {
             return Ok(());
         }

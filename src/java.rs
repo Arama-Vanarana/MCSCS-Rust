@@ -2,13 +2,12 @@
  * Copyright (c) 2024 Arama.
  */
 
-use std::path::PathBuf;
 use std::{
     env,
     error::Error,
     fs,
     io::Read,
-    path::Path,
+    path::{Path, PathBuf},
     process::Command,
     sync::{Arc, Mutex},
 };
@@ -18,7 +17,26 @@ use rayon::prelude::*;
 use regex::Regex;
 use serde_json::{json, Value};
 
-fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
+/// 在一个指定的目录下多线程的寻找指定的
+///
+/// # 使用
+/// ```
+/// use std::fs;
+/// use std::sync::{Arc, Mutex};
+/// use serde_json::json;
+/// use mcscs::java::search_file;
+/// let execute_paths = Arc::new(Mutex::new(Vec::new()));
+///  fs::read_dir("/usr")
+///     .expect("read_error")
+///     .for_each(|entry| {
+///         if let Ok(entry) = entry {
+///             search_file(&entry.path(), &execute_paths, "aria2c");
+///         }
+///     });
+/// let executes = json!(*execute_paths.lock().unwrap());
+/// println!("{}", executes);
+/// ```
+pub fn search_file(path: &Path, execute_paths: &Arc<Mutex<Vec<PathBuf>>>, execute_name: &str) {
     if let Ok(entries) = fs::read_dir(path) {
         entries
             .filter_map(|entry| entry.ok())
@@ -51,19 +69,9 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
                     if "Windows".contains(file_name.as_str()) {
                         return;
                     }
-                    search_file(&file_path, java_paths);
-                } else {
-                    #[cfg(target_os = "windows")]
-                    let execute = "java.exe";
-                    #[cfg(not(target_os = "windows"))]
-                    let execute = "java";
-                    if file_name == execute {
-                        let version = get_java_version(&file_path);
-                        if let Ok(version) = version {
-                            let mut java_paths = java_paths.lock().unwrap();
-                            java_paths.push(json!({"version": version, "path": file_path}));
-                        }
-                    }
+                    search_file(&file_path, execute_paths, execute_name);
+                } else if file_name == execute_name {
+                    execute_paths.lock().unwrap().push(file_path);
                 }
             })
     }
@@ -75,7 +83,7 @@ fn search_file(path: &Path, java_paths: &Arc<Mutex<Vec<Value>>>) {
 /// ```
 /// use std::path::PathBuf;
 /// use mcscs::java::get_java_version;
-/// let version = get_java_version(&PathBuf::from("JavaPath"));
+/// let version = get_java_version(&PathBuf::from("java/path"));
 /// ```
 pub fn get_java_version(java_path: &Path) -> Result<String, Box<dyn Error>> {
     let output = Command::new(java_path)
@@ -105,7 +113,7 @@ pub fn get_java_version(java_path: &Path) -> Result<String, Box<dyn Error>> {
 /// ```
 /// use mcscs::java::detect_java;
 /// if let Ok(java) = detect_java() {
-///     // 处理Java
+///     todo!("处理Java")
 /// }
 /// ```
 ///
@@ -133,18 +141,26 @@ pub fn detect_java() -> Value {
         .collect::<Vec<String>>()
         .into_par_iter()
         .for_each(|drive| {
-            search_file(&PathBuf::from(drive), &java_paths);
+            search_file(&std::path::PathBuf::from(drive), &java_paths, "java.exe");
         });
     #[cfg(not(target_os = "windows"))]
     fs::read_dir("/usr/lib")
         .expect("detect_java()")
         .for_each(|entry| {
             if let Ok(entry) = entry {
-                search_file(&entry.path(), &java_paths);
+                search_file(&entry.path(), &java_paths, "java");
             }
         });
 
-    let java = json!(*java_paths.lock().expect("detect_java()"));
+    let mut java_with_version = Vec::<Value>::new();
+    for java in java_paths.lock().unwrap().clone() {
+        let version = get_java_version(&java);
+        if let Ok(version) = version {
+            java_with_version.push(json!({"path": java, "version": version}));
+        }
+    }
+
+    let java = json!(java_with_version);
     trace!("find -> {java}");
     java
 }

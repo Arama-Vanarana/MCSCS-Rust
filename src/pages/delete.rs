@@ -7,11 +7,11 @@ use std::{env, fs};
 
 use dialoguer::Confirm;
 
-use crate::pages::choose_server;
+use crate::select::select_server;
 
 /// 删除服务器页面
 pub fn main() -> Result<(), Box<dyn Error>> {
-    let mut server = choose_server();
+    let mut server = select_server();
     if server.is_null() {
         println!("你还没有创建任何一个服务器!");
         return Ok(());

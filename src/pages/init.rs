@@ -2,8 +2,6 @@
  * Copyright (c) 2024 Arama.
  */
 
-use std::fs::File;
-use std::io::Read;
 use std::path::PathBuf;
 use std::{env, error::Error, fs, path::Path, process::Command, time::Duration};
 
@@ -17,7 +15,7 @@ use log4rs::{
     encode::pattern::PatternEncoder,
     Config,
 };
-use serde_json::{json, Value};
+use serde_json::json;
 use tokio::sync::Mutex;
 use tokio::time::sleep;
 

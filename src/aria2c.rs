@@ -12,10 +12,13 @@ use log::{info, trace, warn};
 use serde_json::{json, Value};
 
 pub fn call_aria2c_rpc(method: &str, params: Value) -> Result<Value, Box<dyn Error>> {
-    let mut merge_params = vec![json!("token:MCSCS")];
-    merge_params.append(params.clone().as_array_mut().expect("call_aria2c_rpc()"));
+    let mut params = params.clone();
+    params
+        .as_array_mut()
+        .unwrap_or(&mut Vec::<Value>::new())
+        .insert(0, json!("token:MCSCS"));
     let client = Client::simple_http("http://127.0.0.1:6800/jsonrpc", None, None)?;
-    let args = jsonrpc::arg(json!(merge_params));
+    let args = jsonrpc::arg(params);
     let request = client.build_request(method, Some(&args));
     let response = Client::send_request(&client, request)?;
     Ok(json!(response.result))
@@ -207,7 +210,15 @@ pub async fn install_aria2c() {
             "aria2c未安装, 请安装后再次运行本程序:
 Ubuntu/Debian:
 sudo apt update
-sudo apt install aria2"
+sudo apt install aria2
+ArchLinux
+sudo pacman -Syu aria2
+CentOS/RHEL
+sudo yum install aria2
+Fedora
+sudo dnf install aria2
+openSUSE
+sudo zypper install aria2"
         );
     }
 }

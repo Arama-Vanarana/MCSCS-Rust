@@ -8,7 +8,7 @@ use std::{env, fs, path::Path, process::Command};
 use dialoguer::Confirm;
 use log::trace;
 
-use crate::pages::choose_server;
+use crate::select::select_server;
 
 /// 如果path路径参数内没有找到eula.txt(不会寻找子文件夹), 就会要求用户同意EULA协议(https://aka.ms/MinecraftEULA)
 pub fn eula(path: &Path) -> Result<(), Box<dyn Error>> {
@@ -31,7 +31,7 @@ pub fn eula(path: &Path) -> Result<(), Box<dyn Error>> {
 
 /// 启动服务器页面
 pub fn main() -> Result<(), Box<dyn Error>> {
-    let mut server = choose_server();
+    let mut server = select_server();
     if server.is_null() {
         println!("你还没有创建任何一个服务器!");
         return Ok(());

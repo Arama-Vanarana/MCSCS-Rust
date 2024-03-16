@@ -4,7 +4,9 @@
 
 use std::error::Error;
 
-use mcscs::pages::{choose, clear_console, config, create, delete, import, init, pause, start};
+use mcscs::pages::{config, create, delete, import, init, start};
+use mcscs::select::select_option;
+use mcscs::utils::{clear_console, pause};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -14,11 +16,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         "创建服务器",
         "配置服务器",
         "删除服务器",
-        "导入服务器",
+        // "导入服务器",
         "退出",
     ];
     loop {
-        let selection = choose("请选择一个选项(请按上下键切换, Enter确认)", &options)?;
+        let selection = select_option("请选择一个选项(请按上下键切换, Enter确认)", &options)?;
         if selection == options.len() - 1 {
             return Ok(());
         }
