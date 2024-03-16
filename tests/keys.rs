@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Minecraft Server Config Script for Rust.
+ * Copyright (c) 2024 Arama.
  */
 
 use mcscs::pages::{clear_console, pause};

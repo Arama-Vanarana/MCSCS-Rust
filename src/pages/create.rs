@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Minecraft Server Config Script for Rust.
+ * Copyright (c) 2024 Arama.
  */
 
 use std::error::Error;
@@ -52,9 +52,9 @@ pub fn java() -> Result<Value, Box<dyn Error>> {
         }
         if selection == options.len() - 1 {
             #[cfg(target_os = "windows")]
-            let java_path = choose_file("java.exe").unwrap();
+                let java_path = choose_file("java.exe").unwrap();
             #[cfg(not(target_os = "windows"))]
-            let java_path = choose_file("请选择一个Java可执行程序").unwrap();
+                let java_path = choose_file("请选择一个Java可执行程序").unwrap();
             if let Ok(metadata) = fs::metadata(&java_path) {
                 if metadata.is_file() {
                     let java_ver = get_java_version(&java_path);
@@ -256,7 +256,7 @@ pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
             "请选择一个选项或要更改的JVM虚拟机参数(如果为空即为移除参数)",
             &display_args,
         )
-        .unwrap();
+            .unwrap();
         if selection == display_args.len() - 2 {
             let input_arg = input("请输入参数");
             args.push(json!(input_arg));
@@ -311,7 +311,7 @@ pub fn server_args(server_args: Option<&Value>) -> Value {
             "请选择一个选项或要更改的服务器参数(如果为空即为移除参数)",
             &display_args,
         )
-        .unwrap();
+            .unwrap();
         if selection == display_args.len() - 2 {
             let input_arg = input("请输入参数");
             args.push(json!(input_arg));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Minecraft Server Config Script for Rust.
+ * Copyright (c) 2024 Arama.
  */
 
 use std::error::Error;
@@ -98,7 +98,7 @@ mod test_create {
                         "build_version": build_version
                     }
                 ))
-                .unwrap_or("unknown".to_string())
+                    .unwrap_or("unknown".to_string())
             )
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Minecraft Server Config Script for Rust.
+ * Copyright (c) 2024 Arama.
  */
 
 use std::error::Error;
@@ -73,7 +73,7 @@ pub fn choose_file(description: &str) -> Result<PathBuf, Box<dyn Error>> {
             &format!("{} {description}", current_dir.display()),
             &options,
         )
-        .unwrap();
+            .unwrap();
 
         if selection == 0 {
             // 用户选择了返回上一级目录的选项
