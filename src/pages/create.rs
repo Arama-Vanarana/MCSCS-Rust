@@ -81,33 +81,16 @@ pub fn encoding() -> String {
     let options = vec!["UTF-8", "GBK", "ANSI", "ASCII"];
     let selection = select_option("请选择需要使用的编码格式", &options).unwrap();
     options[selection].to_lowercase()
-    // println!("0: UTF-8");
-    // println!("1: GBK");
-    // println!("2: ANSI");
-    // println!("3: ASCII");
-    // print!("请选择需要使用的编码格式: ");
-    // let input_value = input();
-    // if input_value == "0" {
-    //     return "utf-8".to_string();
-    // }
-    // if input_value == "1" {
-    //     return "gbk".to_string();
-    // }
-    // if input_value == "2" {
-    //     return "ansi".to_string();
-    // }
-    // if input_value == "3" {
-    //     return "ascii".to_string();
-    // }
 }
 
 /// 将类似1G,1M等等的字节单位转换为Bytes
 ///
-/// # 使用
+/// # 示例
 /// ```
 /// // 1G = 1000000000B
 /// use mcscs::pages::create::to_bytes;
 /// let bytes = to_bytes("1GB");
+/// println!("{bytes}");
 /// ```
 pub fn to_bytes(byte: &str) -> u64 {
     let mut num_part = String::new();
@@ -155,16 +138,18 @@ pub fn to_bytes(byte: &str) -> u64 {
 
 /// 返回用户输入的XMS(JVM虚拟机初始堆内存)
 ///
-/// # 使用
+/// # 示例
 /// * 使用场景: 创建服务器
 /// ```
 /// use mcscs::pages::create::xms;
 /// let xms = xms(None);
+/// println!("{xms}");
 /// ```
 /// * 使用场景: 配置服务器, 服务器的XMX为1GB
 /// ```
 /// use mcscs::pages::create::{to_bytes, xmx};
 /// let xms = xmx(to_bytes("1GB"));
+/// println!("{xms}");
 /// ```
 pub fn xms(xmx: Option<u64>) -> u64 {
     loop {
@@ -226,12 +211,13 @@ pub fn xmx(xms: u64) -> u64 {
 
 /// 返回用户输入的JVM虚拟机参数
 ///
-/// # 使用
+/// # 示例
 /// * 使用场景: 创建服务器
 /// ```
 /// // 如果是None配置默认会是json!(["-Dlog4j2.formatMsgNoLookups=true"])
 /// use mcscs::pages::create::jvm_args;
 /// let jvm_args = jvm_args(None);
+/// println!("{jvm_args}");
 /// ```
 /// * 使用场景: 配置服务器
 /// ```
@@ -239,6 +225,7 @@ pub fn xmx(xms: u64) -> u64 {
 /// use mcscs::pages::create::jvm_args;
 /// let config = json!(["JVM虚拟机参数", "..."]);
 /// let jvm_args = jvm_args(Some(&config));
+/// println!("{jvm_args}");
 /// ```
 pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
     let mut args = Vec::<Value>::new();
@@ -287,6 +274,7 @@ pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
 /// // 如果是None配置默认会是json!(["--nogui"])
 /// use mcscs::pages::create::server_args;
 /// let server_args = server_args(None);
+/// println!("{server_args}");
 /// ```
 /// * 使用场景: 配置服务器
 /// ```
@@ -294,6 +282,7 @@ pub fn jvm_args(jvm_args: Option<&Value>) -> Value {
 /// use mcscs::pages::create::server_args;
 /// let config = json!(["服务器参数", "..."]);
 /// let server_args = server_args(Some(&config));
+/// println!("{server_args}");
 /// ```
 pub fn server_args(server_args: Option<&Value>) -> Value {
     let mut args = Vec::<Value>::new();

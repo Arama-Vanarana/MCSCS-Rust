@@ -15,6 +15,18 @@ use jsonrpc::Client;
 use log::{info, trace, warn};
 use serde_json::{json, Value};
 
+/// 给aria2c发送JSON-RPC请求
+///
+/// # 参数
+/// 请参考`https://aria2.github.io/manual/en/html/aria2c.html#rpc-interface`
+///
+/// # 示例
+/// ```
+/// use serde_json::json;
+/// use mcscs::aria2c::call_aria2c_rpc;
+/// let version = call_aria2c_rpc("aria2.getVersion", json!([])).unwrap();
+/// println!("{version}");
+/// ```
 pub fn call_aria2c_rpc(method: &str, params: Value) -> Result<Value, Box<dyn Error>> {
     let mut params = params.clone();
     params
@@ -42,14 +54,14 @@ fn format_size(size: u64) -> String {
 
 /// 使用aria2c下载文件
 ///
-/// # 使用
+/// # 示例
 /// ```
 /// use mcscs::aria2c::download;
 /// if let Ok(file_path) = download("https://example.com/file.zip") {
-///     // 处理文件路径
+///     println!("{}", file_path.display());
 /// }
 /// ```
-pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
+pub fn download(url: &str) -> Result<PathBuf, Box<dyn Error>> {
     // 调用 aria2.addUri 来添加下载任务，并获取 GID
     let gid_json = call_aria2c_rpc("aria2.addUri", json!([[url]]))?;
     let gid = gid_json.as_str().unwrap_or_default();
@@ -126,7 +138,7 @@ pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
                 .take();
             if let Some(file_path) = file_path.as_str() {
                 pb.finish_with_message(format!("下载完成: {file_path}"));
-                return Ok(file_path.to_string());
+                return Ok(PathBuf::from(file_path));
             }
             return Err("下载错误".into());
         }
@@ -145,6 +157,7 @@ pub fn download(url: &str) -> Result<String, Box<dyn Error>> {
     }
 }
 
+/// 如果没有安装aria2c,自动从GitHub下载最新的aria2c
 #[cfg(target_os = "windows")]
 pub async fn install_aria2c() {
     use std::{
@@ -207,6 +220,7 @@ pub async fn install_aria2c() {
     }
 }
 
+/// 如果无法获取aria2c可执行程序则报错让用户自己安装aria2c
 #[cfg(not(target_os = "windows"))]
 pub async fn install_aria2c() {
     if get_aria2c_execute().is_err() {
@@ -227,6 +241,14 @@ sudo zypper install aria2"
     }
 }
 
+/// 获取aria2c可执行文件
+///
+/// # 示例
+/// ```
+/// use mcscs::aria2c::get_aria2c_execute;
+/// let aria2c = get_aria2c_execute().unwrap();
+/// println!("{}", aria2c.display());
+/// ```
 pub fn get_aria2c_execute() -> Result<PathBuf, Box<dyn Error>> {
     #[cfg(target_os = "windows")]
     let execute = "aria2c.exe";

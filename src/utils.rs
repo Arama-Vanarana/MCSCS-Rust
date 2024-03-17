@@ -18,7 +18,7 @@ use log::error;
 /// ```
 /// use mcscs::utils::input;
 /// let input_value = input("请输入任意内容");
-/// todo!("处理输入值");
+/// println!("你输入了: {input_value}")
 /// ```
 pub fn input(description: &str) -> String {
     dialoguer::Input::<String>::with_theme(&ColorfulTheme::default())

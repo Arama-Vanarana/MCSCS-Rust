@@ -13,8 +13,7 @@ use serde_json::{json, Value};
 
 /// 保存服务器配置到`MCSCS\configs\servers.json`
 ///
-/// # 使用
-/// * 修改(如果服务器不存在就会创建)
+/// # 示例
 /// ```
 /// use serde_json::json;
 /// use mcscs::pages::create::to_bytes;
@@ -41,23 +40,6 @@ pub fn load_servers_lists(server: Option<&str>) -> Value {
         .expect("load_servers_lists()")
         .join("MCSCS")
         .join("servers");
-    // let mut file = fs::File::open(
-    //     env::current_dir()
-    //         .unwrap()
-    //         .join("MCSCS")
-    //         .join("servers")
-    //         .join(server)
-    //         .join("config.json"),
-    // )
-    // .expect("load_servers_lists()");
-
-    // 读取文件内容到字符串中
-    // let mut json_data = String::new();
-    // file.read_to_string(&mut json_data)
-    //     .expect("load_servers_lists()");
-    // let data = serde_json::from_str::<Value>(&json_data).expect("load_servers_lists()");
-    // trace!("MCSCS/configs/servers.json -> {data}");
-    // data
     if let Some(server) = server {
         let path = path.join(server).join("config.json");
         let mut data = String::new();

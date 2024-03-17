@@ -14,9 +14,8 @@ use mcscs::{
     pages::init,
 };
 
-async fn get_new_fastmirror_info(core: &str) -> (String, String) {
+async fn get_new_fastmirror_info(core: &str) -> (String, String, String) {
     let fastmirror = get_fastmirror_value().await;
-    println!("{fastmirror}");
     let mc_version = if let Some(fastmirror) = fastmirror[core]["mc_versions"]
         .as_array()
         .and_then(|arr| arr.first())
@@ -26,23 +25,16 @@ async fn get_new_fastmirror_info(core: &str) -> (String, String) {
         "unknown".to_string()
     };
     let fastmirror = get_fastmirror_builds_value(core, &mc_version).await;
-    println!("{fastmirror}");
-    let build_version = if let Some(fastmirror) = fastmirror
-        .as_object()
-        .and_then(|obj| obj.iter().next_back())
-    {
-        fastmirror.0.to_string()
-    } else {
-        "unknown".to_string()
-    };
-    (mc_version, build_version)
+    let build_version = fastmirror[0]["core_version"].as_str().unwrap().to_string();
+    let sha1 = fastmirror[0]["sha1"].as_str().unwrap().to_string();
+    (mc_version, build_version, sha1)
 }
 
 /// 测试下载核心
 #[tokio::test]
-async fn test_download_fastmirror_core() {
+async fn test_download_server_core() {
     init::main().await.expect("main()");
-    let (mc_version, build_version) = get_new_fastmirror_info("Mohist").await;
+    let (mc_version, build_version, _) = get_new_fastmirror_info("Mohist").await;
     println!(
         "{}",
         download_server_core("Mohist", &mc_version, &build_version)
@@ -56,18 +48,15 @@ async fn test_download_fastmirror_core() {
 #[tokio::test]
 async fn test_check_sha1() {
     init::main().await.expect("main()");
-    let (mc_version, build_version) = get_new_fastmirror_info("Mohist").await;
-    let mut fastmirror = get_fastmirror_builds_value("Mohist", &mc_version).await;
-    let fastmirror_sha1 = fastmirror[&build_version]["sha1"].take();
-    let fastmirror_sha1_str = fastmirror_sha1.as_str().unwrap();
+    let (mc_version, build_version, fastmirror_sha1) = get_new_fastmirror_info("Mohist").await;
     let file_path = download_server_core("Mohist", &mc_version, &build_version)
         .await
         .unwrap();
     let file_sha1 = get_file_sha1(&file_path);
     println!("文件路径 = {}", file_path.display());
-    println!("FastMirror SHA1 = {fastmirror_sha1_str}");
+    println!("FastMirror SHA1 = {fastmirror_sha1}");
     println!("File SHA1 = {file_sha1}");
-    println!("是否一致: {}", { file_sha1 == fastmirror_sha1_str });
+    println!("是否一致: {}", { file_sha1 == fastmirror_sha1 });
 }
 
 /// 测试下载文件
@@ -76,9 +65,6 @@ async fn test_download_file() {
     init::main().await.expect("main()");
     let downloads =
         aria2c::download("https://speed.cloudflare.com/__down?during=download&bytes=104857600");
-    let file_path = downloads.unwrap_or_else(|err| {
-        eprintln!("下载文件失败: {err}");
-        "unknown".to_string()
-    });
-    println!("文件路径 = {file_path}");
+    let file_path = downloads.unwrap();
+    println!("文件路径 = {}", file_path.display());
 }

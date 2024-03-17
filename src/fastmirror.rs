@@ -21,6 +21,7 @@ use sha1::{Digest, Sha1};
 use crate::aria2c::download;
 
 /// 获取FastMirror的返回值
+///
 /// # 示例
 /// ```
 /// use mcscs::fastmirror::get_fastmirror_value;
@@ -181,5 +182,5 @@ pub async fn download_server_core(
         error!("Fastmirror: {fastmirror_sha1} != File: {file_sha1}");
         return Err("SHA1".into());
     }
-    Ok(PathBuf::from(file_path))
+    Ok(file_path)
 }

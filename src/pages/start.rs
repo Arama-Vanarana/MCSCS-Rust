@@ -17,7 +17,6 @@ use crate::select::select_server;
 /// 如果path路径参数内没有找到eula.txt(不会寻找子文件夹), 就会要求用户同意EULA协议(https://aka.ms/MinecraftEULA)
 pub fn eula(path: &Path) -> Result<(), Box<dyn Error>> {
     if fs::metadata(path.join("eula.txt")).is_err() {
-        print!("你是否同意Minecraft EULA(https://aka.ms/MinecraftEULA)?(Y/N) ");
         if Confirm::new()
             .with_prompt("你是否同意Minecraft EULA(https://aka.ms/MinecraftEULA)?")
             .interact()

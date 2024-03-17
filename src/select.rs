@@ -19,12 +19,12 @@ use crate::server::load_servers_lists;
 
 /// 让用户选择一个选项
 ///
-/// # 使用
+/// # 示例
 /// ```
 /// use mcscs::select::select_option;
 /// let options = vec!["选项1", "选项2", "选项3"];
-/// let selection = select_option("请选择一个选项", &options);
-/// todo!("处理选择的选项");
+/// let selection = select_option("请选择一个选项", &options).unwrap();
+/// println!("用户选择了: {}", options[selection]);
 /// ```
 pub fn select_option<T: ToString>(description: &str, items: &[T]) -> Result<usize, Box<dyn Error>> {
     let selection = Select::with_theme(&ColorfulTheme::default())
@@ -40,8 +40,8 @@ pub fn select_option<T: ToString>(description: &str, items: &[T]) -> Result<usiz
 /// # 使用
 /// ```
 /// use mcscs::select::select_file;
-/// let file_path = select_file("请选择任意一个文件");
-/// todo!("处理选择的文件");
+/// let file_path = select_file("请选择任意一个文件").unwrap();
+/// println!("选择的文件路径: {}", file_path.display());
 /// ```
 pub fn select_file(description: &str) -> Result<PathBuf, Box<dyn Error>> {
     let mut current_dir = fs::canonicalize(".")?;
@@ -89,7 +89,7 @@ pub fn select_file(description: &str) -> Result<PathBuf, Box<dyn Error>> {
     }
 }
 
-/// 返回用户选择的服务器配置
+/// 让用户选择一个服务器
 pub fn select_server() -> Value {
     let server_configs = load_servers_lists(None);
     let mut server_names = Vec::<&String>::new();
