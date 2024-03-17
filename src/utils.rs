@@ -1,10 +1,15 @@
 /*
- * Copyright (c) 2024 Arama.
+ * Copyright (c) 2024 Arama. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+ * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+ * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+ * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 use std::io;
 use std::io::Write;
 
 use console::Term;
+use dialoguer::theme::ColorfulTheme;
 use log::error;
 
 /// 返回输入的内容
@@ -16,7 +21,7 @@ use log::error;
 /// todo!("处理输入值");
 /// ```
 pub fn input(description: &str) -> String {
-    dialoguer::Input::<String>::new()
+    dialoguer::Input::<String>::with_theme(&ColorfulTheme::default())
         .with_prompt(description)
         .interact_text()
         .unwrap()

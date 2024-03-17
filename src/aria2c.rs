@@ -1,5 +1,9 @@
 /*
- * Copyright (c) 2024 Arama.
+ * Copyright (c) 2024 Arama. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+ * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+ * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+ * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
 use std::path::PathBuf;
@@ -230,8 +234,7 @@ pub fn get_aria2c_execute() -> Result<PathBuf, Box<dyn Error>> {
     let execute = "aria2c";
 
     // 先检测有没有内置的aria2c
-    let aria2c_path = env::current_dir()
-        .expect("get_aria2c_execute()")
+    let aria2c_path = env::current_dir()?
         .join("MCSCS")
         .join("aria2c")
         .join(execute);

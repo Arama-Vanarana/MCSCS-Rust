@@ -1,5 +1,9 @@
 /*
- * Copyright (c) 2024 Arama.
+ * Copyright (c) 2024 Arama. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+ * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+ * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+ * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
 use std::{env, fs, process::Command};
@@ -14,9 +18,9 @@ fn main() {
     fs::create_dir_all(&log_path).expect("创建logs文件夹失败");
     fs::create_dir_all(current_dir.join("downloads")).expect("创建MCSCS/downloads文件夹失败");
     #[cfg(target_os = "windows")]
-        let execute = current_dir.join("aria2c").join("aria2c.exe");
+    let execute = current_dir.join("aria2c").join("aria2c.exe");
     #[cfg(not(any(target_os = "windows")))]
-        let execute = "aria2c";
+    let execute = "aria2c";
     let mut aria2c = Command::new(execute);
     aria2c.arg(format!("--dir={}", current_dir.join("downloads").display()));
     aria2c.arg(format!("--log={}", log_path.join("aria2c.log").display()));

@@ -1,5 +1,9 @@
 /*
- * Copyright (c) 2024 Arama.
+ * Copyright (c) 2024 Arama. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+ * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+ * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+ * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
 use std::{
@@ -19,20 +23,16 @@ use serde_json::{json, Value};
 
 /// 在一个指定的目录下多线程的寻找指定的
 ///
-/// # 使用
+/// # 示例
 /// ```
 /// use std::fs;
+/// use std::path::PathBuf;
 /// use std::sync::{Arc, Mutex};
 /// use serde_json::json;
 /// use mcscs::java::search_file;
 /// let execute_paths = Arc::new(Mutex::new(Vec::new()));
-///  fs::read_dir("/usr")
-///     .expect("read_error")
-///     .for_each(|entry| {
-///         if let Ok(entry) = entry {
-///             search_file(&entry.path(), &execute_paths, "aria2c");
-///         }
-///     });
+/// // 如果你要寻找其他的文件请把aria2替换为你的文件名称(带扩展名)
+/// search_file(&PathBuf::from("/usr"), &execute_paths, "aria2c");
 /// let executes = json!(*execute_paths.lock().unwrap());
 /// println!("{}", executes);
 /// ```
@@ -79,7 +79,7 @@ pub fn search_file(path: &Path, execute_paths: &Arc<Mutex<Vec<PathBuf>>>, execut
 
 /// 获取Java的版本
 ///
-/// # 使用
+/// # 示例
 /// ```
 /// use std::path::PathBuf;
 /// use mcscs::java::get_java_version;
@@ -109,11 +109,11 @@ pub fn get_java_version(java_path: &Path) -> Result<String, Box<dyn Error>> {
 /// 获取计算机所有安装的Java
 /// 个人测试WSL下1秒出结果, Windows下4秒出结果!!!!!
 ///
-/// # 使用
+/// # 示例
 /// ```
 /// use mcscs::java::detect_java;
 /// if let Ok(java) = detect_java() {
-///     todo!("处理Java")
+///     println!("{java}");
 /// }
 /// ```
 ///

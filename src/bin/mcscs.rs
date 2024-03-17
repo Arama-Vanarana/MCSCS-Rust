@@ -1,5 +1,9 @@
 /*
- * Copyright (c) 2024 Arama.
+ * Copyright (c) 2024 Arama. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+ * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+ * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+ * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
 use std::error::Error;
@@ -10,7 +14,7 @@ use mcscs::utils::{clear_console, pause};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    init::main().await.expect("main()");
+    init::main().await?;
     let options = vec![
         "启动服务器",
         "创建服务器",

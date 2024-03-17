@@ -1,5 +1,9 @@
 /*
- * Copyright (c) 2024 Arama.
+ * Copyright (c) 2024 Arama. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+ * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+ * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+ * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
 use std::{
@@ -17,14 +21,14 @@ use sha1::{Digest, Sha1};
 use crate::aria2c::download;
 
 /// 获取FastMirror的返回值
-/// # 使用
+/// # 示例
 /// ```
 /// use mcscs::fastmirror::get_fastmirror_value;
 ///
 /// #[tokio::main]
 /// async fn main() {
 ///     let fastmirror = get_fastmirror_value().await;
-///     // ...
+///     println!("{fastmirror}");
 /// }
 /// ```
 ///
@@ -70,14 +74,14 @@ pub async fn get_fastmirror_value() -> Value {
 
 /// 获取FastMirror返回的指定版本的构建版本
 ///
-/// # 使用
+/// # 示例
 /// ```
 /// use mcscs::fastmirror::get_fastmirror_builds_value;
 ///
 /// #[tokio::main]
 /// async fn main() {
 ///     let fastmirror = get_fastmirror_builds_value("Mohist", "1.20.1").await;
-///     // ...
+///     println!("{fastmirror}")
 /// }
 /// ```
 ///
@@ -148,7 +152,7 @@ pub fn get_file_sha1(file_path: &Path) -> String {
 
 /// 下载服务器核心
 ///
-/// # 使用
+/// # 示例
 /// ```
 /// use mcscs::fastmirror::download_server_core;
 ///
