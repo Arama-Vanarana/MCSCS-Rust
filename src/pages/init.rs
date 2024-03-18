@@ -100,7 +100,14 @@ async fn init_aria2(current_dir: &Path, log_path: &Path) -> Result<(), Box<dyn E
             fs::create_dir_all(current_dir.join("downloads"))?;
             fs::create_dir_all(&aria2c_current_dir)?;
             if !aria2c_current_dir.join("aria2c.conf").exists() {
-                let data = reqwest::get("https://raw.githubusercontent.com/Arama-Vanarana/MCSCS-Rust/main/MCSCS/aria2c/aria2c.conf").await.unwrap().text().await.unwrap();
+                let data = reqwest::get(
+                    "https://github.com/Arama-Vanarana/MCSCS-Rust/releases/latest/aria2c.conf",
+                )
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap();
                 fs::write(aria2c_current_dir.join("aria2c.conf"), data)?;
             }
             let mut aria2c = Command::new(get_aria2c_execute()?);
