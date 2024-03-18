@@ -47,7 +47,7 @@ pub fn java() -> Result<Value, Box<dyn Error>> {
             options.push(info);
         }
         options.push("重新检测Java环境".to_string());
-        options.push("手动输入Java可执行程序路径".to_string());
+        options.push("手动选择Java可执行程序".to_string());
         let selection = select_option("请选择一个Java环境或选项", &options)?;
         if selection == options.len() - 2 {
             save_java_lists(&detect_java());
@@ -56,7 +56,7 @@ pub fn java() -> Result<Value, Box<dyn Error>> {
         }
         if selection == options.len() - 1 {
             #[cfg(target_os = "windows")]
-            let java_path = choose_file("java.exe").unwrap();
+            let java_path = select_file("java.exe").unwrap();
             #[cfg(not(target_os = "windows"))]
             let java_path = select_file("请选择一个Java可执行程序").unwrap();
             if let Ok(metadata) = fs::metadata(&java_path) {
