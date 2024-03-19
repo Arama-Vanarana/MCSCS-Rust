@@ -6,16 +6,13 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-use mcscs::{
-    pages::{choose_server, init},
-    server::load_servers_lists,
-};
+use mcscs::{pages::init, select::select_server, server::load_servers_lists};
 
 #[tokio::test]
 async fn test_get_server_config() {
     init::main().await.expect("main()");
     let data = load_servers_lists(Some(
-        choose_server()["name"]
+        select_server()["name"]
             .as_str()
             .expect("test_get_server_config()"),
     ));

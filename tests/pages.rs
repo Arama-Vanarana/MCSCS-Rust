@@ -38,7 +38,7 @@ mod test_create {
     fn test_java() {
         println!(
             "{}",
-            serde_json::to_string_pretty(&java()).unwrap_or("unknown".to_string())
+            serde_json::to_string_pretty(&java().unwrap()).unwrap_or("unknown".to_string())
         )
     }
 

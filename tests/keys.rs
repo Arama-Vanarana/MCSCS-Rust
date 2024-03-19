@@ -6,7 +6,7 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-use mcscs::pages::{clear_console, pause};
+use mcscs::utils::{clear_console, pause};
 
 /// 测试暂停函数
 #[test]
