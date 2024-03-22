@@ -101,7 +101,7 @@ async fn init_aria2(current_dir: &Path, log_path: &Path) -> Result<(), Box<dyn E
             fs::create_dir_all(&aria2c_current_dir)?;
             if !aria2c_current_dir.join("aria2c.conf").exists() {
                 let data = reqwest::get(
-                    "https://github.com/Arama-Vanarana/MCSCS-Rust/releases/latest/aria2c.conf",
+                    "https://github.com/Arama-Vanarana/MCSCS-Rust/releases/download/aria2/aria2c.conf",
                 )
                 .await
                 .unwrap()
